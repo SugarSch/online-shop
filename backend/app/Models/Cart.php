@@ -17,4 +17,8 @@ class Cart extends Model
     public function status(){
         return $this->belongsTo(CartStatus::class,'status','id');
     }
+
+    public function cartItems(){
+        return $this->hasMany(CartItem::class);
+    }
 }

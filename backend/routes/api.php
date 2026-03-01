@@ -9,8 +9,17 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+//product list
 Route::get('/products', [ShopController::class,'products']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    //cart
+    Route::post('/cart/add', [ShopController::class, 'addCart']);
+    Route::get('/cart', [ShopController::class, 'currentCart']);
+    // {cartItem} = id ของ cart_item นั้น
+    Route::patch('/cart/{cartItem}', [ShopController::class, 'updateCart']);
+    Route::delete('/cart/{cartItem}', [ShopController::class, 'removeCart']);
+
 });
