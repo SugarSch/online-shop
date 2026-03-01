@@ -17,8 +17,8 @@ class AdminUserSeeder extends Seeder
         $roleId = Role::where("code","admin")->first()->id;
 
         User::create([
-            'username' => 'adminuser',
-            'email'=> 'test@mail.com',
+            'name' => 'adminuser',
+            'email'=> 'adminuser@mail.com',
             'password'=> bcrypt('adminuser'),
             'role_id' => $roleId
         ]);
