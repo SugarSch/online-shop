@@ -28,7 +28,8 @@ class StatusSeeder extends Seeder
 
         $cart_rows = [
             ['code' => 'pending', 'label' => 'กำลังดำเนินการ'],
-            ['code' => 'completed', 'label' => 'ชำระเรียบร้อย']
+            ['code' => 'completed', 'label' => 'สินค้าถูกส่งแล้ว'],
+            ['code' => 'paid', 'label' => 'ชำระเรียบร้อย']
         ];
 
         foreach ($cart_rows as $r) {
