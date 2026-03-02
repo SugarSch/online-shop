@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -23,37 +24,41 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <AuthProvider>
-        {/* ใช้ Consumer เพื่อเช็กสถานะ loading */}
-        <AuthContext.Consumer>
-            {({ loading }) => (
-                loading ? <p className="text-center mt-5">กำลังโหลดข้อมูล...</p> : (
-                    <CartProvider>
-                      <BrowserRouter>
-                          <Routes>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+          {/* ใช้ Consumer เพื่อเช็กสถานะ loading */}
+          <AuthContext.Consumer>
+              {({ loading }) => (
+                  loading ? <p className="text-center mt-5">กำลังโหลดข้อมูล...</p> : (
+                      <CartProvider>
+                        <BrowserRouter>
+                            <Routes>
 
-                            <Route path="/" element={
-                                                <ProtectedRoute>
-                                                  <Home />
-                                                </ProtectedRoute>
-                                              } >
-                                <Route path="" element={ <Product /> } />
-                                <Route path="products" element={ <Product /> } />
-                                <Route path="history" element={ <History /> } />
-                                <Route path="cart/:id" element={ <Home /> } />
-                            </Route>
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
+                              <Route path="/" element={
+                                                  <ProtectedRoute>
+                                                    <Home />
+                                                  </ProtectedRoute>
+                                                } >
+                                  <Route path="" element={ <Product /> } />
+                                  <Route path="products" element={ <Product /> } />
+                                  <Route path="history" element={ <History /> } />
+                                  <Route path="cart/:id" element={ <Home /> } />
+                              </Route>
+                              <Route path="/login" element={<Login />} />
+                              <Route path="/register" element={<Register />} />
 
-                          </Routes>
-                      </BrowserRouter>
-                    </CartProvider>
-                )
-            )}
-        </AuthContext.Consumer>
-    </AuthProvider>
+                            </Routes>
+                        </BrowserRouter>
+                      </CartProvider>
+                  )
+              )}
+          </AuthContext.Consumer>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }
 
