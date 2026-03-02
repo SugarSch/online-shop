@@ -25,7 +25,26 @@ body {
     background-color: #f37a01 !important;
 }
 
-.error_msg {
+.orange-icon {
+    color: #f37a01;
+}
+
+.error_msg, .red-icon {
     color: red;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.floating-cart {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 

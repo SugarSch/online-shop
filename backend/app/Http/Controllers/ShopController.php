@@ -27,13 +27,23 @@ class ShopController extends Controller
         $cart = Cart::where('user_id', $userId)
                     ->where('status', $statusId)
                     ->first();
-        $data = null;
+        $data = [];
         if($cart){
             $totalPrice = 0;
+            $data['cart'] = $cart->toArray();
+            $data['cartItems'] = [];
             foreach($cart->cartItems as $cartItem){
                 $totalPrice += ($cartItem->quantity * $cartItem->product->price);
+                $data['cartItems'][] = [
+                    'id' => $cartItem->id,
+                    'product_id'=> $cartItem->product_id,
+                    'name' => $cartItem->product->name,
+                    'price' => $cartItem->product->price,
+                    'quantity'=> $cartItem->quantity,
+                    'total' => $cartItem->product->price * $cartItem->quantity
+                ];
             }
-            $data = $cart->toArray();
+            
             $data['total_price'] = $totalPrice;
         }
 

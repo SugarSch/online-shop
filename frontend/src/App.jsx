@@ -10,6 +10,8 @@ import { CartProvider } from './context/CartContext';
 import Login from './client/Login';
 import Register from './client/Register';
 import Home from './client/Home';
+import Product from './client/Product';
+import History from './client/History';
 
 //เช็กสิทธิ ถ้ายังไม่ login จะพากลับ login page
 const ProtectedRoute = ({ children }) => {
@@ -37,8 +39,9 @@ function App() {
                                                   <Home />
                                                 </ProtectedRoute>
                                               } >
-                                <Route path="products" element={ <Home /> } />
-                                <Route path="history" element={ <Home /> } />
+                                <Route path="" element={ <Product /> } />
+                                <Route path="products" element={ <Product /> } />
+                                <Route path="history" element={ <History /> } />
                                 <Route path="cart/:id" element={ <Home /> } />
                             </Route>
                             <Route path="/login" element={<Login />} />
