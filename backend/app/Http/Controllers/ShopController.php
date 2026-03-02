@@ -7,6 +7,7 @@ use App\Models\CartStatus;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ShopController extends Controller
 {
@@ -21,7 +22,7 @@ class ShopController extends Controller
     }
 
     public function currentCart(Request $request){
-        $userId = $request->user()->id;
+        $userId = auth()->user()->id;
         $statusId = CartStatus::where('code','pending')->first()->id;
         $cart = Cart::where('user_id', $userId)
                     ->where('status', $statusId)
@@ -51,7 +52,7 @@ class ShopController extends Controller
         ]);
 
         //ตรวจสอบว่า user นี้เคยมีตะกร้าที่ค้างอยู่รึเปล่า
-        $userId = $request->user()->id;
+        $userId = auth()->user()->id;
         $cartId = $cartItemId = 0;
         $statusId = CartStatus::where('code','pending')->first()->id;
         $cart = Cart::where('user_id', $userId)
@@ -107,15 +108,9 @@ class ShopController extends Controller
         ]);
     }
 
-    public function updateCart(Request $request, CartItem $cartItem){
+    public function updateCartItem(Request $request, CartItem $cartItem){
         //ตรวจสอบสิทธิก่อน
-        $cart = Cart::find($cartItem->cart_id);
-        if($cart->user_id != auth()->user()->id){
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'Cannot update other user cart'
-            ]);
-        }
+        Gate::authorize('update', $cartItem);
         
         $data = $request->validate([
             'quantity' => 'required|numeric|gt:0'
@@ -140,17 +135,12 @@ class ShopController extends Controller
 
     }
 
-    public function removeCart(CartItem $cartItem){
-        $cart = Cart::find($cartItem->cart_id);
+    public function removeCartItem(CartItem $cartItem){
 
         //ตรวจสอบสิทธิก่อน
-        if($cart->user_id != auth()->user()->id){
-            return response()->json([
-                'status' => 'fail',
-                'message' => 'Cannot remove other user cart'
-            ]);
-        }
+        Gate::authorize('delete', $cartItem);
 
+        $cart = $cartItem->cart;
         $cartItem->delete();
 
         //ถ้าในตะกร้าไม่มี item เหลืออยู่เลย >>> ลบตะกร้าทิ้งไปด้วย
@@ -161,6 +151,23 @@ class ShopController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Remove cart item'
+        ]);
+    }
+
+    public function updateCartStatus(Request $request, Cart $cart){
+        //ตรวจสอบสิทธิก่อน
+        Gate::authorize('update', $cart);
+
+        $data = $request->validate([
+            'status' => 'required|exists:cart_status,id',
+            'location' => 'required|string'
+        ]);
+
+        $cart->status = $data['status'];
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Update cart status'
         ]);
     }
 }
