@@ -15,5 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, $request) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $e->getMessage() ?: 'Forbidden access',
+            ], 403);
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, $request) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => $e->getMessage() ?: 'Forbidden access',
+            ], 403);
+        });
     })->create();
