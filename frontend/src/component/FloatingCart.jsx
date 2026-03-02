@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartShopping, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 import { thbFormatter, portal_root } from '../baseVariable';
-import { CartContext } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 
 function CartModal({ isOpen, onClose, cart }){
     
@@ -56,20 +56,24 @@ function CartModal({ isOpen, onClose, cart }){
 
 function FloatingCart(){
     const [ modal, setModal ] = useState(false);
-    const { cart } = useContext(CartContext);
-    console.log("FloatingCart");
-    console.log(cart);
+    const { cart, isLoading } = useCart();
+
+    //เช็กว่าข้อมูลตะกร้าพร้อมโชว์รึยัง
+    const isReady = !isLoading && cart && cart.cartItems?.length > 0;
+
     return <>
-        {cart && (
-                    <Button 
-                        variant="warning" 
-                        className="floating-cart"
-                        onClick={() => setModal(true)} // เปิด popup รายการที่สั่งไป
-                    >
-                        <FontAwesomeIcon icon={faCartShopping} style={{fontSize: "20px"}}/>
-                        <span className="badge bg-danger cart-badge" style={{ position: "absolute", right: "8px"}}>{cart.cartItems?.length || 0}</span>
-                    </Button>
-                )}
+        <Button 
+            variant="warning" 
+            className={`floating-cart fade-in-up ${isReady ? 'show' : ''}`}
+            onClick={() => setModal(true)} // เปิด popup รายการที่สั่งไป
+        >
+            <FontAwesomeIcon icon={faCartShopping} style={{fontSize: "20px"}}/>
+            <span className="badge bg-danger cart-badge cart-badge-pop" 
+                    style={{ position: "absolute", right: "8px"}}>
+                {isReady ? cart.cartItems.length : 0}
+            </span>
+        </Button>
+        
         <CartModal isOpen={modal} onClose={() => setModal(false)} cart={cart}/>
     </>
 }

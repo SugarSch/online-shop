@@ -20,7 +20,7 @@ function ClientNav(){
             </Navbar.Collapse>
 
             <Navbar.Text className="justify-content-end order-3 d-flex align-items-center">
-                {user?.name ? user.name : "ผู้เยี่ยมชม"}
+                {user?.name ? user.name : ""}
                 {user && <FontAwesomeIcon className="ms-3 pointer" icon={faRightFromBracket} onClick={logout}/>}
             </Navbar.Text>
         </Container>

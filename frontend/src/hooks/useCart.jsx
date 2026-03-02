@@ -1,0 +1,41 @@
+// hooks/useCart.js
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../api';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+
+export const useCart = () => {
+    const { token } = useContext(AuthContext);
+    const queryClient = useQueryClient();
+
+    // ดึงข้อมูลสินค้าในตะกร้า
+    const cartQuery = useQuery({
+        queryKey: ["cart"],
+        queryFn: async () => {
+            const response = await api.get("/cart");
+            return response.data.data;
+        },
+        enabled: !!token,
+        staleTime: 1000 * 60 * 10, // 10 นาที
+        retry: false,
+        refetchOnWindowFocus: false,
+    });
+
+    // เพิ่ม/ลดสินค้า
+    const updateCartMutation = useMutation({
+        mutationFn: async (payload) => {
+            return await api.post("/cart/update", payload);
+        },
+        onSuccess: () => {
+            // ล้างข้อมูลตะกร้าเก่าเพื่อให้ React query ดึงตัวใหม่
+            queryClient.invalidateQueries({ queryKey: ["cart"] });
+        }
+    });
+
+    return {
+        cart: cartQuery.data,
+        isLoading: cartQuery.isLoading,
+        isError: cartQuery.isError,
+        updateCart: updateCartMutation.mutate
+    };
+};
