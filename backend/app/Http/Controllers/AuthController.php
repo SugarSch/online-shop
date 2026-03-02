@@ -33,11 +33,12 @@ class AuthController extends Controller
             'status' => 'success',
             'message' => 'Login success',
             'plainTextToken' => $token,
-            'data' => [
-                'name' => $user->name,
-                'role' => $user->role,
-                'default_location' => $user->default_location,
-            ]
+            'user' => [
+                        'id'=> $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'default_location' => $user->default_location
+                    ]
         ]);
     }
 
@@ -67,6 +68,14 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Log out'
+        ]);
+    }
+
+    public function getUser()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => auth()->user()
         ]);
     }
 }
