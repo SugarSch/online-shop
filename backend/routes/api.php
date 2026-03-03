@@ -25,5 +25,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // {cart} = id ของ cart นั้น
     Route::patch('/cart/order/{cart}', [ShopController::class, 'orderCart']);
+    Route::get('/cart/order/history', [ShopController::class, 'orderHistory']);
 
 });

@@ -24,6 +24,23 @@ export const useCart = () => {
         refetchOnWindowFocus: false,
     });
 
+    // ดึงประวัติออเดอร์
+    const cartOrderHistoryQuery = useQuery({
+        queryKey: ["cartOrderHistory"],
+        queryFn: async () => {
+            try {
+                const response = await api.get("/cart/order/history");
+                return response.data.data ? response.data.data : { };
+            } catch (error) {
+                return {  };
+            }
+        },
+        enabled: !!token,
+        staleTime: 1000 * 60 * 10, // 10 นาที
+        retry: false,
+        refetchOnWindowFocus: false,
+    });
+
     // เพิ่มสินค้าลงตะกร้า
     const addCartMutation = useMutation({
         mutationFn: async (payload) => {
@@ -64,7 +81,7 @@ export const useCart = () => {
         },
         onSuccess: () => {
             // ล้างข้อมูลตะกร้าเก่าเพื่อให้ React query ดึงตัวใหม่
-            queryClient.invalidateQueries({ queryKey: ["cart"] });
+            queryClient.invalidateQueries({ queryKey: ["cart", "cartOrderHistory"] });
         }
     });
 
@@ -72,6 +89,9 @@ export const useCart = () => {
         cart: cartQuery.data,
         isLoading: cartQuery.isLoading,
         isError: cartQuery.isError,
+        cartHistory: cartOrderHistoryQuery.data,
+        isLoadingHistory: cartOrderHistoryQuery.isLoading,
+        isErrorHistory: cartOrderHistoryQuery.isError,
         addCart: addCartMutation.mutate,
         isCartAdding: addCartMutation.isPending,
         updateCart: updateCartMutation.mutate,

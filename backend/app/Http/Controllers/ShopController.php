@@ -192,4 +192,45 @@ class ShopController extends Controller
             'message' => 'Update cart status'
         ]);
     }
+
+    public function orderHistory(){
+        $userId = auth()->user()->id;
+        $statusId = CartStatus::where('code','pending')->first()->id;
+
+        $carts = Cart::where('user_id', $userId)
+                    ->where('status','!=' ,$statusId)
+                    ->orderBy('updated_at', 'desc')
+                    ->get();
+        $history = [];
+
+        if($carts){
+            foreach($carts as $cart){
+                $tmp = [
+                    'date' => $cart->updated_at,
+                    'location' => $cart->location,
+                    // 'status' => $cart->status->label,
+                    'items' => [],
+                    'total' => 0
+                ];
+                foreach($cart->cartItems as $item){
+                    $total = $item->product->price * $item->quantity;
+                    $tmp['items'][] = [
+                        'name' => $item->product->name,
+                        'quantity' => $item->quantity,
+                        'price' => $item->product->price,
+                        'total' => $total
+                    ];
+                    $tmp['total'] += $total;
+                }
+                $history[] = $tmp;
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'get history',
+            'data' => $history
+        ]);
+
+    }
 }
