@@ -18,8 +18,8 @@ class Product extends Model
     {
         return Attribute::make(
             get: fn ($value, $attributes) => $attributes['img_path'] // เปลี่ยนเป็นชื่อ column จริงใน DB
-                ? '/storage/products/' . $attributes['img_path'] 
-                : '/storage/product_placeholder.jpg',
+                ? env('APP_URL').'/storage/products/' . $attributes['img_path'] 
+                : env('APP_URL').'/storage/product_placeholder.jpg',
         );
     }
 

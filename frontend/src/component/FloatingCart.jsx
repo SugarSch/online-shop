@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Container, Table , Button, Modal } from "react-bootstrap";
+import { Table , Button, Modal } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartShopping, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
@@ -15,7 +15,7 @@ function CartModal({ isOpen, onClose, cart }){
     const TotalPrice = cart.total_price;
     
     return createPortal(
-        <Modal show={isOpen} onHide={onClose} backdrop="static" keyboard={false}>
+        <Modal show={isOpen} onHide={onClose} centered backdrop="static" keyboard={false}>
             <Modal.Header closeButton>
                 <Modal.Title>รายการสินค้าในตะกร้า</Modal.Title>
             </Modal.Header>

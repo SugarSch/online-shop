@@ -26,7 +26,13 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 30, // ดึง cache ใหม่ ทุก ๆ 30 นาที
+    },
+  },
+});
 
 function App() {
   return (

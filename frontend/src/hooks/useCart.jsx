@@ -1,4 +1,3 @@
-// hooks/useCart.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api';
 import { useContext } from 'react';
@@ -21,10 +20,32 @@ export const useCart = () => {
         refetchOnWindowFocus: false,
     });
 
-    // เพิ่ม/ลดสินค้า
+    // เพิ่มสินค้าลงตะกร้า
+    const addCartMutation = useMutation({
+        mutationFn: async (payload) => {
+            return await api.post("/cart/add", payload);
+        },
+        onSuccess: () => {
+            // ล้างข้อมูลตะกร้าเก่าเพื่อให้ React query ดึงตัวใหม่
+            queryClient.invalidateQueries({ queryKey: ["cart"] });
+        }
+    });
+
+    //แก้ไขจำนวนสินค้า
     const updateCartMutation = useMutation({
         mutationFn: async (payload) => {
-            return await api.post("/cart/update", payload);
+            return await api.patch("/cart/" + payload.id, payload);
+        },
+        onSuccess: () => {
+            // ล้างข้อมูลตะกร้าเก่าเพื่อให้ React query ดึงตัวใหม่
+            queryClient.invalidateQueries({ queryKey: ["cart"] });
+        }
+    });
+
+    //ลบสินค้าออกจากตะกร้า
+    const removeCartMutation = useMutation({
+        mutationFn: async (payload) => {
+            return await api.delete("/cart/" + payload.id);
         },
         onSuccess: () => {
             // ล้างข้อมูลตะกร้าเก่าเพื่อให้ React query ดึงตัวใหม่
@@ -36,6 +57,12 @@ export const useCart = () => {
         cart: cartQuery.data,
         isLoading: cartQuery.isLoading,
         isError: cartQuery.isError,
-        updateCart: updateCartMutation.mutate
+        addCart: addCartMutation.mutate,
+        isCartAdding: addCartMutation.isPending,
+        updateCart: updateCartMutation.mutate,
+        isCartUpdating: updateCartMutation.isPending,
+        removeCart: removeCartMutation.mutate
+        isCartRemoving: removeCartMutation.isPending,
+
     };
 };

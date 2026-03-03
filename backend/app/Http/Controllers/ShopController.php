@@ -17,7 +17,7 @@ class ShopController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Get product',
-            'products' => $products
+            'data' => $products
         ]);
     }
 
