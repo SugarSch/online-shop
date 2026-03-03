@@ -24,6 +24,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/{cartItem}', [ShopController::class, 'removeCartItem']);
 
     // {cart} = id ของ cart นั้น
-    Route::patch('/cart/{cart}', [ShopController::class, 'updateCartStatus']);
+    Route::patch('/cart/order/{cart}', [ShopController::class, 'orderCart']);
 
 });

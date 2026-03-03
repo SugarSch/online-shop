@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\CartStatus;
 use App\Models\CartItem;
+use App\Models\CartStatus;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -164,16 +165,27 @@ class ShopController extends Controller
         ]);
     }
 
-    public function updateCartStatus(Request $request, Cart $cart){
+    public function orderCart(Request $request, Cart $cart){
         //ตรวจสอบสิทธิก่อน
         Gate::authorize('update', $cart);
 
         $data = $request->validate([
-            'status' => 'required|exists:cart_status,id',
             'location' => 'required|string'
         ]);
 
-        $cart->status = $data['status'];
+        $statusID = CartStatus::where('code','paid')->first()->id;
+
+        $cart->location = $data['location'];
+        $cart->status = $statusID;
+        $cart->save();
+
+        //บันทึกข้อมูลที่อยู่ใน user
+        if($request->isCheckLocation){
+            $userId = auth()->user()->id;
+            $user = User::find($userId);
+            $user->default_location = $data['location'];
+            $user->save();
+        }
 
         return response()->json([
             'status' => 'success',

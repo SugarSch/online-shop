@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCirclePlus } from '@fortawesome/free-solid-svg-icons';
 
 import { thbFormatter, portal_root } from '../baseVariable';
+import FloatingCart from '../component/FloatingCart';
 import { useProduct } from '../hooks/useProduct';
 import { useCart } from '../hooks/useCart';
 import NumericInput from '../component/NumericInput';
@@ -42,7 +43,14 @@ function AddProductModal({ isOpen, onClose, currentProduct }){
             </Modal.Header>
             <Modal.Body>
                 <div className="d-flex justify-content-center my-2"><NumericInput number={quantity} onMinus={handleDecrease} onPlus={handleIncrease}/></div>
-                <div className="text-center"><Button variant="primary" onClick={addToCart} disabled={isCartAdding}>{ isCartAdding ? "เพิ่มไปยังรถเข็น" : "กำลังบันทึก..."}</Button></div>
+                <div className="text-center">
+                    <Button variant="primary" onClick={addToCart} disabled={isCartAdding}>
+                        {isCartAdding ? (
+                            "กำลังบันทึก..."
+                        ) : (
+                            "เพิ่มไปยังรถเข็น"
+                        )}
+                    </Button></div>
             </Modal.Body>
         </Modal>,
         portal_root
@@ -137,6 +145,7 @@ function Product(){
             </div>
         </Row>
     </Container>
+    <FloatingCart />
     <AddProductModal isOpen={modal} onClose={closedModal} currentProduct={currentProduct} />
     </>
 }

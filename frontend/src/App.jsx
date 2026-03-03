@@ -12,6 +12,7 @@ import Register from './client/Register';
 import Home from './client/Home';
 import Product from './client/Product';
 import History from './client/History';
+import Order from './client/Order';
 
 //เช็กสิทธิ ถ้ายังไม่ login จะพากลับ login page
 const ProtectedRoute = ({ children }) => {
@@ -49,7 +50,7 @@ function App() {
                   <Route path="" element={ <Product /> } />
                   <Route path="product" element={ <Product /> } />
                   <Route path="history" element={ <History /> } />
-                  <Route path="cart/:id" element={ <Home /> } />
+                  <Route path="order" element={ <Order /> } />
               </Route>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

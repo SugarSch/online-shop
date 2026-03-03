@@ -11,8 +11,12 @@ export const useCart = () => {
     const cartQuery = useQuery({
         queryKey: ["cart"],
         queryFn: async () => {
-            const response = await api.get("/cart");
-            return response.data.data;
+            try {
+                const response = await api.get("/cart");
+                return response.data.data ? response.data.data : { cart: {}, cartItems: [], total_price: 0 };
+            } catch (error) {
+                return { cart: {}, cartItems: [], total_price: 0 };
+            }
         },
         enabled: !!token,
         staleTime: 1000 * 60 * 10, // 10 นาที
@@ -53,6 +57,17 @@ export const useCart = () => {
         }
     });
 
+    //order สมบูรณ์
+    const orderCartMutation = useMutation({
+        mutationFn: async (payload) => {
+            return await api.patch("/cart/order/" + payload.id, payload);
+        },
+        onSuccess: () => {
+            // ล้างข้อมูลตะกร้าเก่าเพื่อให้ React query ดึงตัวใหม่
+            queryClient.invalidateQueries({ queryKey: ["cart"] });
+        }
+    });
+
     return {
         cart: cartQuery.data,
         isLoading: cartQuery.isLoading,
@@ -62,7 +77,8 @@ export const useCart = () => {
         updateCart: updateCartMutation.mutate,
         isCartUpdating: updateCartMutation.isPending,
         removeCart: removeCartMutation.mutate,
-        isCartRemoving: removeCartMutation.isPending
-
+        isCartRemoving: removeCartMutation.isPending,
+        orderCart: orderCartMutation.mutate,
+        isCartOrdering: orderCartMutation.isPending
     };
 };

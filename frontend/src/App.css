@@ -116,3 +116,12 @@ body {
   font-size: 20px;
 }
 
+.form-control, .form-check-input {
+  border: var(--bs-border-width) solid var(--bs-btn-border-color) !important;
+}
+
+.form-check-input:checked {
+    background-color: #f37a01 !important;
+    border-color: #f37a01 !important;
+}
+

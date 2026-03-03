@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Table , Button, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,13 @@ function CartModal({ isOpen, onClose, cart }){
     const navigate = useNavigate();
 
     const {updateCart, isCartUpdating, removeCart, isCartRemoving } = useCart();
+
+    useEffect(() => {
+        // ถ้า Modal เปิดอยู่ และข้อมูลตะกร้าโหลดมาแล้ว แต่ไม่มีสินค้าเหลือเลย >>> ปิด Modal
+        if (isOpen && cart && cart.cartItems && cart.cartItems.length === 0) {
+            onClose();
+        }
+    }, [cart, isOpen, onClose]);
 
     function updateItemQuantity(cartItem, mode){
 
@@ -47,6 +54,9 @@ function CartModal({ isOpen, onClose, cart }){
             };
             updateCart(payload, {
                 onSuccess: () => {
+                    if(!cart.cartItems || cart.cartItems.length == 0){
+                        onClose();
+                    }
                 },
                 onError: (err) => {
                     alert("เกิดข้อผิดพลาด: " + err.response?.data?.message);
@@ -54,6 +64,11 @@ function CartModal({ isOpen, onClose, cart }){
             });
         }
 
+    }
+
+    function toOrderPage(){
+        onClose();
+        navigate("/order");
     }
     
     return createPortal(
@@ -75,7 +90,7 @@ function CartModal({ isOpen, onClose, cart }){
                     </thead>
                     <tbody>
                         {
-                            cartItem.map( c => (<tr key={c.id}>
+                            cartItem?.map( c => (<tr key={c.id}>
                                 <td>{c.name}</td>
                                 <td className="text-end">
                                     <FontAwesomeIcon 
@@ -110,7 +125,7 @@ function CartModal({ isOpen, onClose, cart }){
                     </tbody>
                 </Table>
                 <div className="text-center">
-                    <Button variant="primary" onClick={ () => navigate("/order/" + cart.cart.id)}>สั่งซื้อ</Button>
+                    <Button variant="primary" onClick={ toOrderPage }>สั่งซื้อ</Button>
                 </div>
             </Modal.Body>
         </Modal>,
