@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Table , Button, Modal } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCartShopping, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faCartShopping, faSquareMinus, faSquarePlus, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 import { thbFormatter, portal_root } from '../baseVariable';
 import { useCart } from '../hooks/useCart';
@@ -13,6 +14,47 @@ function CartModal({ isOpen, onClose, cart }){
     
     const cartItem = cart.cartItems;
     const TotalPrice = cart.total_price;
+    const navigate = useNavigate();
+
+    const {updateCart, isCartUpdating, removeCart, isCartRemoving } = useCart();
+
+    function updateItemQuantity(cartItem, mode){
+
+        if(mode == 'remove'){
+            const payload = {
+                id: cartItem.id
+            }
+            removeCart(payload, {
+                onSuccess: () => {
+                    alert('ลบสินค้าสำเร็จ');
+                },
+                onError: (err) => {
+                    alert("เกิดข้อผิดพลาด: " + err.response?.data?.message);
+                }
+            });
+        }else{
+            var quantity = cartItem.quantity;
+
+            if(mode == 'increase'){
+                quantity = quantity + 1;
+            }else{
+                quantity = quantity - 1;
+            }
+
+            const payload = {
+                id: cartItem.id,
+                quantity: quantity
+            };
+            updateCart(payload, {
+                onSuccess: () => {
+                },
+                onError: (err) => {
+                    alert("เกิดข้อผิดพลาด: " + err.response?.data?.message);
+                }
+            });
+        }
+
+    }
     
     return createPortal(
         <Modal show={isOpen} onHide={onClose} centered backdrop="static" keyboard={false}>
@@ -27,27 +69,49 @@ function CartModal({ isOpen, onClose, cart }){
                             <th></th>
                             <th></th>
                             <th></th>
+                            <th></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {
-                            cartItem.map( c => (<tr>
+                            cartItem.map( c => (<tr key={c.id}>
                                 <td>{c.name}</td>
+                                <td className="text-end">
+                                    <FontAwesomeIcon 
+                                        className="pointer orange-icon icon-size-20"
+                                        icon={faSquareMinus}
+                                        onClick={() => updateItemQuantity(c, 'decrease')}
+                                    />
+                                </td>
                                 <td className="text-center">{c.quantity}</td>
+                                <td className="text-start">
+                                    <FontAwesomeIcon
+                                        className="pointer orange-icon icon-size-20"
+                                        icon={faSquarePlus}
+                                        onClick={() => updateItemQuantity(c, 'increase')}
+                                    />
+                                </td>
                                 <td className="text-end">{thbFormatter.format(c.total)}</td>
                                 <td className="text-center">
-                                    <FontAwesomeIcon className="pointer orange-icon" icon={faPenToSquare} />
-                                    <FontAwesomeIcon className="pointer" icon={faTrashCan} />
+                                    <FontAwesomeIcon 
+                                        className="pointer"
+                                        icon={faTrashCan}
+                                        onClick={() => updateItemQuantity(c, 'remove')}
+                                    />
                                 </td>
                             </tr>))
                         }
                         <tr>
-                            <td colSpan={2}>ยอดรวม</td>
+                            <td colSpan={4}>ยอดรวม</td>
                             <td className="text-end">{thbFormatter.format(TotalPrice)}</td>
                             <td></td>
                         </tr>
                     </tbody>
                 </Table>
+                <div className="text-center">
+                    <Button variant="primary" onClick={ () => navigate("/order/" + cart.cart.id)}>สั่งซื้อ</Button>
+                </div>
             </Modal.Body>
         </Modal>,
         portal_root

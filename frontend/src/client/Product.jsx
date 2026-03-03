@@ -123,9 +123,8 @@ function Product(){
                                 <div className="text-center">
                                     {p.stock < 1 ? "สินค้าหมด" : 
                                         <FontAwesomeIcon 
-                                            className="orange-icon pointer"
+                                            className="orange-icon pointer icon-size-20"
                                             data-id={p.id}
-                                            style={{fontSize : "20px"}}
                                             icon={faCirclePlus}
                                             onClick={() => handleProductModal(p)}
                                     />}

@@ -61,8 +61,8 @@ export const useCart = () => {
         isCartAdding: addCartMutation.isPending,
         updateCart: updateCartMutation.mutate,
         isCartUpdating: updateCartMutation.isPending,
-        removeCart: removeCartMutation.mutate
-        isCartRemoving: removeCartMutation.isPending,
+        removeCart: removeCartMutation.mutate,
+        isCartRemoving: removeCartMutation.isPending
 
     };
 };
