@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\HasStatus;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CartStatus;
@@ -14,12 +15,11 @@ use Illuminate\Support\Facades\Gate;
 
 class ShopController extends Controller
 {
+    use HasStatus;
     public function products(){
 
         //เอาเฉพาะ available
-        $statusId = Cache::rememberForever('product_status_available_id', function () {
-            return ProductStatus::where('code', 'available')->value('id');
-        });
+        $statusId = $this->getStatusIdByCode('product', 'available');
         
         $products = Product::where('status', $statusId)
                     ->withSum(['reservations' => function($query) {
@@ -39,9 +39,7 @@ class ShopController extends Controller
 
     public function currentCart(Request $request){
         $userId = auth()->user()->id;
-        $statusId = Cache::rememberForever('cart_status_pending_id', function () {
-            return CartStatus::where('code','pending')->value('id');
-        });
+        $statusId = $this->getStatusIdByCode('cart', 'pending');
         $cart = Cart::where('user_id', $userId)
                     ->where('status', $statusId)
                     ->first();
@@ -82,9 +80,7 @@ class ShopController extends Controller
         //ตรวจสอบว่า user นี้เคยมีตะกร้าที่ค้างอยู่รึเปล่า
         $userId = auth()->user()->id;
         $cartId = $cartItemId = 0;
-        $statusId = Cache::rememberForever('cart_status_pending_id', function () {
-            return CartStatus::where('code','pending')->value('id');
-        });
+        $statusId = $this->getStatusIdByCode('cart', 'pending');
         $cart = Cart::where('user_id', $userId)
                     ->where('status', $statusId)
                     ->first();
@@ -192,12 +188,10 @@ class ShopController extends Controller
             'location' => 'required|string'
         ]);
 
-        $statusID = Cache::rememberForever('cart_status_paid_id', function () {
-            return CartStatus::where('code','paid')->value('id');
-        });
+        $statusId = $this->getStatusIdByCode('cart', 'paid');
 
         $cart->location = $data['location'];
-        $cart->status = $statusID;
+        $cart->status = $statusId;
         $cart->save();
 
         //บันทึกข้อมูลที่อยู่ใน user
@@ -219,9 +213,7 @@ class ShopController extends Controller
         $data = Cache::remember('user_'.$userId.'_history', now()->addDay(), function () {
             $userId = auth()->user()->id;
 
-            $statusId = Cache::rememberForever('cart_status_pending_id', function () {
-                return CartStatus::where('code','pending')->value('id');
-            });
+            $statusId = $this->getStatusIdByCode('cart', 'pending');
 
             $carts = Cart::with(['cartItems.product']) // ดึง cartItems และ product มาพร้อมกัน
                 ->where('user_id', $userId)
