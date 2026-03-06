@@ -119,7 +119,7 @@ function Product(){
             {
                 product?.map( p => (
                     <Col key={p.id} lg={2} md={4} xs={6} className="mb-4 d-flex align-items-stretch">
-                        <Card className="shadow-sm w-100 mx-1" data-toggle="tooltip" data-placement="top" title={p.description}>
+                        <Card className="shadow-sm w-100 mx-1">
                             <Card.Img 
                                 className="card-img-top"
                                 variant="top"src={p.img_path}

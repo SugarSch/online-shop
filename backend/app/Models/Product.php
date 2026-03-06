@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\ProductReservation;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,5 +26,10 @@ class Product extends Model
 
     public function status(){
         return $this->belongsTo(ProductStatus::class,'status','id');
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(ProductReservation::class);
     }
 }

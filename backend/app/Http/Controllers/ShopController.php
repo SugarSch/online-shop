@@ -6,14 +6,29 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CartStatus;
 use App\Models\Product;
+use App\Models\ProductStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
 class ShopController extends Controller
 {
     public function products(){
-        $products = Product::all();
+
+        //เอาเฉพาะ available
+        $statusId = Cache::rememberForever('product_status_available_id', function () {
+            return ProductStatus::where('code', 'available')->value('id');
+        });
+        
+        $products = Product::where('status', $statusId)
+                    ->withSum(['reservations' => function($query) {
+                        $query->where('status', 'pending')
+                            ->where('expires_at', '>', now());
+                    }], 'stock')
+                    ->select('name', 'img_path', 'price', 'stock','status')
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(12);
 
         return response()->json([
             'status' => 'success',
@@ -24,7 +39,9 @@ class ShopController extends Controller
 
     public function currentCart(Request $request){
         $userId = auth()->user()->id;
-        $statusId = CartStatus::where('code','pending')->first()->id;
+        $statusId = Cache::rememberForever('cart_status_pending_id', function () {
+            return CartStatus::where('code','pending')->value('id');
+        });
         $cart = Cart::where('user_id', $userId)
                     ->where('status', $statusId)
                     ->first();
@@ -65,7 +82,9 @@ class ShopController extends Controller
         //ตรวจสอบว่า user นี้เคยมีตะกร้าที่ค้างอยู่รึเปล่า
         $userId = auth()->user()->id;
         $cartId = $cartItemId = 0;
-        $statusId = CartStatus::where('code','pending')->first()->id;
+        $statusId = Cache::rememberForever('cart_status_pending_id', function () {
+            return CartStatus::where('code','pending')->value('id');
+        });
         $cart = Cart::where('user_id', $userId)
                     ->where('status', $statusId)
                     ->first();
@@ -173,7 +192,9 @@ class ShopController extends Controller
             'location' => 'required|string'
         ]);
 
-        $statusID = CartStatus::where('code','paid')->first()->id;
+        $statusID = Cache::rememberForever('cart_status_paid_id', function () {
+            return CartStatus::where('code','paid')->value('id');
+        });
 
         $cart->location = $data['location'];
         $cart->status = $statusID;
@@ -195,41 +216,44 @@ class ShopController extends Controller
 
     public function orderHistory(){
         $userId = auth()->user()->id;
-        $statusId = CartStatus::where('code','pending')->first()->id;
+        $data = Cache::remember('user_'.$userId.'_history', now()->addDay(), function () {
+            $userId = auth()->user()->id;
 
-        $carts = Cart::where('user_id', $userId)
-                    ->where('status','!=' ,$statusId)
-                    ->orderBy('updated_at', 'desc')
-                    ->get();
-        $history = [];
+            $statusId = Cache::rememberForever('cart_status_pending_id', function () {
+                return CartStatus::where('code','pending')->value('id');
+            });
 
-        if($carts){
-            foreach($carts as $cart){
-                $tmp = [
-                    'date' => $cart->updated_at,
-                    'location' => $cart->location,
-                    // 'status' => $cart->status->label,
-                    'items' => [],
-                    'total' => 0
-                ];
-                foreach($cart->cartItems as $item){
-                    $total = $item->product->price * $item->quantity;
-                    $tmp['items'][] = [
-                        'name' => $item->product->name,
-                        'quantity' => $item->quantity,
-                        'price' => $item->product->price,
-                        'total' => $total
-                    ];
-                    $tmp['total'] += $total;
-                }
-                $history[] = $tmp;
-            }
-        }
+            $carts = Cart::with(['cartItems.product']) // ดึง cartItems และ product มาพร้อมกัน
+                ->where('user_id', $userId)
+                ->where('status', '!=', $statusId)
+                ->orderBy('updated_at', 'desc')
+                ->get();
+            
+            return $carts->map(function ($cart) {
+                        $items = $cart->cartItems->map(function ($item) {
+                            $lineTotal = $item->product->price * $item->quantity;
+                            return [
+                                'name'     => $item->product->name,
+                                'quantity' => $item->quantity,
+                                'price'    => $item->product->price,
+                                'total'    => $lineTotal
+                            ];
+                        });
+
+                        return [
+                            'date'     => $cart->updated_at,
+                            'location' => $cart->location,
+                            // 'status' => $cart->status->label, // เปิดใช้ได้ถ้า Load relationship status มาด้วย
+                            'items'    => $items,
+                            'total'    => $items->sum('total')
+                        ];
+                    })->toArray();
+        });
 
         return response()->json([
             'status' => 'success',
             'message' => 'get history',
-            'data' => $history
+            'data' => $data
         ]);
 
     }
