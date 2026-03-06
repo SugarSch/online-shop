@@ -15,7 +15,7 @@ class StatusSeeder extends Seeder
     public function run(): void
     {
         $product_rows = [
-            ['code' => 'avalible', 'label' => 'เปิดขาย'],
+            ['code' => 'available', 'label' => 'เปิดขาย'],
             ['code' => 'out_of_stock', 'label' => 'หมดสต็อก']
         ];
 

@@ -25,8 +25,8 @@ class ShopController extends Controller
                     ->withSum(['reservations' => function($query) {
                         $query->where('status', 'pending')
                             ->where('expires_at', '>', now());
-                    }], 'stock')
-                    ->select('name', 'img_path', 'price', 'stock','status')
+                    }], 'stock_number')
+                    ->select('id', 'name', 'img_path', 'price', 'stock_number','status')
                     ->orderBy('created_at', 'desc')
                     ->paginate(12);
 
@@ -223,11 +223,11 @@ class ShopController extends Controller
             
             return $carts->map(function ($cart) {
                         $items = $cart->cartItems->map(function ($item) {
-                            $lineTotal = $item->product->price * $item->quantity;
+                            $lineTotal = $item->snap_price * $item->quantity;
                             return [
-                                'name'     => $item->product->name,
+                                'name'     => $item->snap_name,
                                 'quantity' => $item->quantity,
-                                'price'    => $item->product->price,
+                                'price'    => $item->snap_price,
                                 'total'    => $lineTotal
                             ];
                         });

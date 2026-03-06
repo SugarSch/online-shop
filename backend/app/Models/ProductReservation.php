@@ -9,6 +9,7 @@ class ProductReservation extends Model
 {
     use HasFactory;
 
+    protected $table = 'product_reservations';
     protected $fillable = ['product_id', 'cart_id', 'expired_at', 'status'];
 
     protected function casts(): array

@@ -11,7 +11,7 @@ class CartItem extends Model
 
     protected $table = 'cart_items';
 
-    protected $fillable = ['cart_id', 'product_id', 'quantity'];
+    protected $fillable = ['cart_id', 'product_id', 'quantity', 'snap_price', 'snap_name'];
 
     public function cart(){
         return $this->belongsTo(Cart::class);

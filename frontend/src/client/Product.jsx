@@ -77,7 +77,7 @@ function Product(){
     const [ modal, setModal ] = useState(false);
     const [ currentProduct, setCurrentProduct ] = useState(null);
 
-    const isReady = !isLoading && product && product?.length > 0;
+    const isReady = !isLoading && product && product.data.length > 0;
 
     //สำหรับเช็กว่าภาพสินค้าโหลดสำเร็จรึยัง >>> โหลดเสร็จค่อยโชว์
     const [loadedImagesCount, setLoadedImagesCount] = useState(0);
@@ -89,7 +89,7 @@ function Product(){
     useEffect(() => {
         if (!isLoading && product) {
             // ถ้าภาพโหลดครบ (หรือไม่มีสินค้า) ให้สั่งพร้อมโชว์
-            if (product.length === 0 || loadedImagesCount >= product.length) {
+            if (!product.data || product.data.length === 0 || loadedImagesCount >= product.data.length) {
                 setIsDataReady(true);
             }
         }
@@ -117,7 +117,7 @@ function Product(){
             }
             <div className={`row fade-in-up ${isDataReady ? 'show' : 'd-none'}`}>
             {
-                product?.map( p => (
+                product?.data?.map( p => (
                     <Col key={p.id} lg={2} md={4} xs={6} className="mb-4 d-flex align-items-stretch">
                         <Card className="shadow-sm w-100 mx-1">
                             <Card.Img 
