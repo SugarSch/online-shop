@@ -227,6 +227,33 @@ class ShopController extends Controller
         $cart->status = $statusId;
         $cart->save();
 
+        //เอา stock ที่ reserve ไว้มาตัดจริง
+        $reservations = $cart->reservations->where('status', 'pending');
+        foreach($reservations as $reservation){
+            DB::transaction(function () use ($reservation) {
+                // คืนค่าสต็อกกลับไปที่ตัวสินค้า
+                $product = Product::find($reservation->product_id);
+                if ($product) {
+                    $product->decrement('stock_number', $reservation->quantity);
+                }
+                // อัปเดตสถานะการจองเป็น completed
+                $reservation->update(['status' => 'completed']);
+            });
+        }
+
+        //snap ราคา
+        $cartItems = $cart->cartItems;
+        foreach($cartItems as $cartItem){
+            DB::transaction(function () use ($cartItem) {
+                $cartItem->snap_name = $cartItem->product->name;
+                $cartItem->snap_price = $cartItem->product->price;
+                $cartItem->save();
+            });
+        }
+
+        // ล้าง Cache ประวัติการสั่งซื้อของ User คนนี้โดยเฉพาะ
+        Cache::forget('user_' . auth()->user()->id . '_history');
+
         //บันทึกข้อมูลที่อยู่ใน user
         if($request->isCheckLocation){
             $userId = auth()->user()->id;

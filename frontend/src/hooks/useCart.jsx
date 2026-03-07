@@ -81,18 +81,17 @@ export const useCart = () => {
         },
         onSuccess: (newData) => {
         // อัปเดตข้อมูลใน Cache ของ "cart" ทันทีโดยไม่ต้องยิง API ใหม่
-        console.log(newData);
-        queryClient.setQueryData(["cart"], (oldData) => {
-            return {
-                ...oldData,
-                expired_at: newData.data.expired_at // อัปเดตค่า expired
-                
-            };
-        });
-        
-        // สั่ง invalidate ควบคู่ไปด้วย
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-    }
+            queryClient.setQueryData(["cart"], (oldData) => {
+                return {
+                    ...oldData,
+                    expired_at: newData.data.expired_at // อัปเดตค่า expired
+                    
+                };
+            });
+            
+            // สั่ง invalidate ควบคู่ไปด้วย
+            queryClient.invalidateQueries({ queryKey: ["cart"], exact: false });
+        }
         
     });
 
@@ -103,7 +102,11 @@ export const useCart = () => {
         },
         onSuccess: () => {
             // ล้างข้อมูลตะกร้าเก่าเพื่อให้ React query ดึงตัวใหม่
-            queryClient.invalidateQueries({ queryKey: ["cart", "cartOrderHistory"] });
+
+            queryClient.setQueryData(["cart"], () => {
+                return {}; //ล้างตะกร้าให้ว่าง
+            });
+            queryClient.invalidateQueries({ queryKey: ["cart", "cartOrderHistory"], exact: false });
         }
     });
 
