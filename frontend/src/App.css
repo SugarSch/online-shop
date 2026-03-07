@@ -25,6 +25,15 @@ body {
     background-color: #f37a01 !important;
 }
 
+.bg-dark {
+  --bs-navbar-brand-color: #fff !important;
+  --bs-navbar-color: #fff !important;
+}
+
+.bg-dark .navbar-toggler {
+  background-color: #fff;
+}
+
 .orange-icon {
     color: #f37a01;
 }

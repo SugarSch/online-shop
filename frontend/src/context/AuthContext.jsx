@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api';
 
@@ -28,13 +28,19 @@ export const AuthProvider = ({ children }) => {
         }
     );
 
-    const login = (userData, userToken) => {
+    const login = (userData, userToken, navigate) => {
         setToken(userToken);
         localStorage.setItem("token", userToken);
 
         localStorage.setItem("user_basic", JSON.stringify(userData));
         // สั่งให้ Query "authUser" โหลดข้อมูลใหม่ทันทีหลัง Login
         queryClient.setQueryData(["authUser"], userData);
+
+        if (userData.role === 'admin') {
+            navigate("/admin/order_management"); // ลากไปหน้า Admin
+        } else {
+            navigate("/product"); // User ทั่วไปไปหน้าแรก
+        }
     };
 
     const logout = () => {

@@ -25,8 +25,7 @@ function Login(){
             if(response.data.status == 'success'){
                 const user = response.data.user;
                 const token = response.data.plainTextToken;
-                login(user, token);
-                navigate("/");
+                login(user, token, navigate);
             }
         } catch(err){ // ดึง Error Message จาก Laravel ที่เราทำไว้ (401 หรือ 422)
             setError(err.response?.data?.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");

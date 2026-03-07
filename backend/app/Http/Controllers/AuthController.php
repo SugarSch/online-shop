@@ -37,6 +37,7 @@ class AuthController extends Controller
                         'id'=> $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
+                        'role' => $user->role->code,
                         'default_location' => $user->default_location
                     ]
         ]);
@@ -73,6 +74,10 @@ class AuthController extends Controller
 
     public function getUser()
     {
+        $user = auth()->user();
+        $data = $user;
+        $data['role'] = $user->role->code;
+
         return response()->json([
             'status' => 'success',
             'data' => auth()->user()

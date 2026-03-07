@@ -9,13 +9,21 @@ import { AuthContext, AuthProvider } from './context/AuthContext';
 
 import Login from './client/Login';
 import Register from './client/Register';
-import Home from './client/Home';
+
+//หน้าฝั่ง client
+import ClientPanel from './client/ClientPanel';
 import Product from './client/Product';
 import History from './client/History';
 import Order from './client/Order';
 
+//หน้าฝั่ง admin
+import AdminPanel from './admin/AdminPanel';
+import ProductManagement from './admin/ProductManagement';
+import OrderManagement from './admin/OrderManagement';
+import Report from './admin/Report';
+
 //เช็กสิทธิ ถ้ายังไม่ login จะพากลับ login page
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, isAdminOnly = false }) => {
     const { token, loading, user } = useContext(AuthContext);
 
     if (token && loading && !user) {
@@ -23,6 +31,11 @@ const ProtectedRoute = ({ children }) => {
     }
 
     if (!token) return <Navigate to="/login" />;
+
+    //หน้าฝั่ง admin >>> ถ้า user ไม่มีสิทธิ admin ให้ดีดกลับหน้าแรก
+    if (isAdminOnly && user?.role !== 'admin') {
+        return <Navigate to="/" replace />;
+    }
     
     return children;
 };
@@ -44,14 +57,24 @@ function App() {
 
               <Route path="/" element={
                                   <ProtectedRoute>
-                                    <Home />
+                                    <ClientPanel />
                                   </ProtectedRoute>
                                 } >
-                  <Route path="" element={ <Product /> } />
                   <Route path="product" element={ <Product /> } />
                   <Route path="history" element={ <History /> } />
                   <Route path="order" element={ <Order /> } />
               </Route>
+
+              <Route path="/admin" element={
+                                  <ProtectedRoute isAdminOnly={true}>
+                                    <AdminPanel />
+                                  </ProtectedRoute>
+                                } >
+                  <Route path="order_management" element={ <OrderManagement /> } />
+                  <Route path="product_management" element={ <ProductManagement /> } />
+                  <Route path="report" element={ <Report /> } />
+              </Route>
+
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
