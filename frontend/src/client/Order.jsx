@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table , Button, Container, Row, Col, Form } from 'react-bootstrap';
 
@@ -7,11 +7,54 @@ import { thbFormatter } from '../baseVariable';
 import { useCart } from '../hooks/useCart';
 
 function Order(){
-    const { cart, isLoading, orderCart, isCartOrdering } = useCart();
+    const { cart, orderCart } = useCart();
     const { user } = useContext(AuthContext);
+    const targetTime = cart?.expired_at ? cart.expired_at : null;
+    const cartItem = cart?.cartItems ? cart.cartItems : null;
+    const TotalPrice = cart?.total_price ? cart.total_price : null;
     const [location, setLocation] = useState(user?.default_location ? user.default_location : '');
     const [isCheckLocation, setIsCheckLocation] = useState(false);
     const navigate = useNavigate();
+
+    function calculateTimeLeft() {
+        if (!targetTime) return null;
+        const difference = +new Date(targetTime) - +new Date();
+        if (difference <= 0) return null;
+
+        return {
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60),
+        };
+    }
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+    function completeOrder() {
+        if(!location){
+            alert("โปรดใส่ที่อยู่จัดส่ง");
+        }else{
+            const payload = {id: cart.cart.id, location : location, isCheckLocation: isCheckLocation};
+            orderCart(payload, {
+                onSuccess: () => {
+                    alert("บันทึกคำสั่งซื้อเรียบร้อย ขอบคุณที่อุดหนุนค่ะ");
+                    navigate("/");
+                },
+                onError: (err) => {
+                    alert("เกิดข้อผิดพลาด: " + err.response?.data?.message);
+                }
+            });
+        }
+    }
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+        setTimeLeft(
+            calculateTimeLeft());
+        }, 1000);
+        return () => clearInterval(timer); // Cleanup
+    }, [targetTime]);
 
     if(!cart || !cart.cartItems || cart.cartItems.length === 0){
         return <Container className="align-items-center justify-content-center vh-100">
@@ -31,30 +74,18 @@ function Order(){
         </Container>
     }
 
-    const cartItem = cart.cartItems;
-    const TotalPrice = cart.total_price;
-
-    function completeOrder() {
-        if(!location){
-            alert("โปรดใส่ที่อยู่จัดส่ง");
-        }else{
-            const payload = {id: cart.cart.id, location : location, isCheckLocation: isCheckLocation};
-            console.log(payload);
-            orderCart(payload, {
-                onSuccess: () => {
-                    alert("บันทึกคำสั่งซื้อเรียบร้อย ขอบคุณที่อุดหนุนค่ะ");
-                    navigate("/");
-                },
-                onError: (err) => {
-                    alert("เกิดข้อผิดพลาด: " + err.response?.data?.message);
-                }
-            });
-        }
-    }
-
     return <Container>
         <Row className="px-2 py-2">
             <Col className="card-title h2 text-center">รายการสินค้า</Col>
+        </Row>
+        <Row className="px-2 py-2">
+            <Col>โปรดดำเนินการให้เสร็จสิ้นภายในเวลา: 
+            {
+                timeLeft 
+                    ? `${timeLeft.minutes.toString().padStart(2, '0')}:${timeLeft.seconds.toString().padStart(2, '0')}` 
+                    : "00:00"
+            }
+            </Col>
         </Row>
         <Row>
             <Table responsive>

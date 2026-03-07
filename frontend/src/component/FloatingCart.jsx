@@ -16,7 +16,7 @@ function CartModal({ isOpen, onClose, cart }){
     const TotalPrice = cart.total_price;
     const navigate = useNavigate();
 
-    const {updateCart, isCartUpdating, removeCart, isCartRemoving } = useCart();
+    const {updateCart, removeCart, reserveStockCart } = useCart();
 
     useEffect(() => {
         // ถ้า Modal เปิดอยู่ และข้อมูลตะกร้าโหลดมาแล้ว แต่ไม่มีสินค้าเหลือเลย >>> ปิด Modal
@@ -67,8 +67,17 @@ function CartModal({ isOpen, onClose, cart }){
     }
 
     function toOrderPage(){
+        const payload = { id: cart.cart.id };
+        console.log(payload);
+        reserveStockCart(payload, {
+            onSuccess: () => {
+                navigate("/order");
+            },
+            onError: (err) => {
+                alert("เกิดข้อผิดพลาด: " + err.response?.data?.message);
+            }
+        });
         onClose();
-        navigate("/order");
     }
     
     return createPortal(

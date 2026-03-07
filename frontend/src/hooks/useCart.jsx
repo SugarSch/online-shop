@@ -13,9 +13,9 @@ export const useCart = () => {
         queryFn: async () => {
             try {
                 const response = await api.get("/cart");
-                return response.data.data ? response.data.data : { cart: {}, cartItems: [], total_price: 0 };
+                return response.data.data ? response.data.data : { cart: {}, cartItems: [], total_price: 0, expired_at: null };
             } catch (error) {
-                return { cart: {}, cartItems: [], total_price: 0 };
+                return { cart: {}, cartItems: [], total_price: 0, expired_at: null };
             }
         },
         enabled: !!token,
@@ -74,6 +74,28 @@ export const useCart = () => {
         }
     });
 
+    //จองสินค้าใน stock ตอนกำลังสั่งซื้อ
+    const reserveStockCartMutation = useMutation({
+        mutationFn: async (payload) => {
+            return await api.patch("/cart/reserve/" + payload.id, payload);
+        },
+        onSuccess: (newData) => {
+        // อัปเดตข้อมูลใน Cache ของ "cart" ทันทีโดยไม่ต้องยิง API ใหม่
+        console.log(newData);
+        queryClient.setQueryData(["cart"], (oldData) => {
+            return {
+                ...oldData,
+                expired_at: newData.data.expired_at // อัปเดตค่า expired
+                
+            };
+        });
+        
+        // สั่ง invalidate ควบคู่ไปด้วย
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+    }
+        
+    });
+
     //order สมบูรณ์
     const orderCartMutation = useMutation({
         mutationFn: async (payload) => {
@@ -98,6 +120,8 @@ export const useCart = () => {
         isCartUpdating: updateCartMutation.isPending,
         removeCart: removeCartMutation.mutate,
         isCartRemoving: removeCartMutation.isPending,
+        reserveStockCart: reserveStockCartMutation.mutate,
+        isCartReserving: reserveStockCartMutation.isPending,
         orderCart: orderCartMutation.mutate,
         isCartOrdering: orderCartMutation.isPending
     };

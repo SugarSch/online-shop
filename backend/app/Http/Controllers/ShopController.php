@@ -7,10 +7,12 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CartStatus;
 use App\Models\Product;
+use App\Models\ProductReservation;
 use App\Models\ProductStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class ShopController extends Controller
@@ -22,11 +24,11 @@ class ShopController extends Controller
         $statusId = $this->getStatusIdByCode('product', 'available');
         
         $products = Product::where('status', $statusId)
+                    ->select('id', 'name', 'img_path', 'price', 'stock_number','status')
                     ->withSum(['reservations' => function($query) {
                         $query->where('status', 'pending')
-                            ->where('expires_at', '>', now());
-                    }], 'stock_number')
-                    ->select('id', 'name', 'img_path', 'price', 'stock_number','status')
+                            ->where('expired_at', '>', now());
+                    }], 'quantity')
                     ->orderBy('created_at', 'desc')
                     ->paginate(12);
 
@@ -40,7 +42,8 @@ class ShopController extends Controller
     public function currentCart(Request $request){
         $userId = auth()->user()->id;
         $statusId = $this->getStatusIdByCode('cart', 'pending');
-        $cart = Cart::where('user_id', $userId)
+        $cart = Cart::with(['cartItems.product', 'reservations'])
+                    ->where('user_id', $userId)
                     ->where('status', $statusId)
                     ->first();
         $data = [];
@@ -61,6 +64,12 @@ class ShopController extends Controller
             }
             
             $data['total_price'] = $totalPrice;
+
+            //เอา expired การจองสินค้ามาสำหรับโชว์ตอนกำลังชำระเงิน
+            $reserve = $cart->reservations->where('status', 'pending')->min('expired_at');
+
+            $data['expired_at'] = $reserve ? $reserve : null ;
+
         }
 
         return response()->json([
@@ -178,6 +187,30 @@ class ShopController extends Controller
             'status' => 'success',
             'message' => 'Remove cart item'
         ]);
+    }
+
+    public function reserveStock(Cart $cart){
+        //ตรวจสอบสิทธิก่อน
+        Gate::authorize('update', $cart);
+
+        //หมดอายุหลังผ่านไป 30 นาที
+        $expired_at = now()->addMinutes(30);
+
+        foreach($cart->cartItems as $cartItem){
+            DB::transaction(function () use ($cartItem, $expired_at) {
+                $data = [
+                    'cart_id' => $cartItem->cart_id,
+                    'product_id' => $cartItem->product_id,
+                    'status' => 'pending',
+                    'expired_at' => $expired_at,
+                    'quantity' => $cartItem->quantity
+                ];
+                ProductReservation::create($data);
+            });
+        }
+
+        return response()->json(['status'=> 'success','data'=> ['expired_at' => $expired_at]]);
+
     }
 
     public function orderCart(Request $request, Cart $cart){

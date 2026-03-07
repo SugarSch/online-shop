@@ -124,12 +124,15 @@ function Product(){
                                 className="card-img-top"
                                 variant="top"src={p.img_path}
                                 onLoad={handleImageLoad}
-                                onError={handleImageLoad} />
+                                onError={handleImageLoad}
+                                />
                             <Card.Body>
                                 <Card.Title>{p.name}</Card.Title>
-                                <Card.Text>ราคา: {thbFormatter.format(p.price)}</Card.Text>
+                                <Card.Text>
+                                    ราคา: {thbFormatter.format(p.price)}
+                                </Card.Text>
                                 <div className="text-center">
-                                    {p.stock < 1 ? "สินค้าหมด" : 
+                                    { ( p.stock_number - p.reservations_sum_quantity) < 1 ? "สินค้าหมด" : 
                                         <FontAwesomeIcon 
                                             className="orange-icon pointer icon-size-20"
                                             data-id={p.id}

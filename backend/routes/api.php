@@ -25,6 +25,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // {cart} = id ของ cart นั้น
     Route::patch('/cart/order/{cart}', [ShopController::class, 'orderCart']);
+    Route::patch('/cart/reserve/{cart}', [ShopController::class, 'reserveStock']);
     Route::get('/cart/order/history', [ShopController::class, 'orderHistory']);
 
 });
+
+//cache for image
+// Route::get('/storage/{path}', function ($path) {
+//   return response()->file(storage_path("app/public/{$path}"))
+//     ->withHeaders([
+//       'Cache-Control' => 'public, max-age=604800, immutable',
+//     ]);
+// })->where('path', '.*');

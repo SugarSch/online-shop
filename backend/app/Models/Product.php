@@ -20,16 +20,16 @@ class Product extends Model
         return Attribute::make(
             get: fn ($value, $attributes) => $attributes['img_path'] // เปลี่ยนเป็นชื่อ column จริงใน DB
                 ? env('APP_URL').'/storage/products/' . $attributes['img_path'] 
-                : env('APP_URL').'/storage/product_placeholder.jpg',
+                : env('APP_URL').'/storage/product_placeholeder.webp',
         );
     }
 
     public function status(){
-        return $this->belongsTo(ProductStatus::class,'status','id');
+        return $this->belongsTo(ProductStatus::class,'id','status');
     }
 
     public function reservations()
     {
-        return $this->hasMany(ProductReservation::class);
+        return $this->hasMany(ProductReservation::class, 'product_id', 'id');
     }
 }
