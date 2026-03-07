@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ShopController;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +30,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/cart/reserve/{cart}', [ShopController::class, 'reserveStock']);
     Route::get('/cart/order/history', [ShopController::class, 'orderHistory']);
 
+});
+
+
+//ฝั่ง admin
+Route::middleware(['auth:sanctum', EnsureUserIsAdmin::class])->group(function () {
+    
+    // ทุก Route ที่อยู่ในนี้จะถูกเช็กสิทธิ์ Admin อัตโนมัติ
+    Route::get('/admin/report', [AdminController::class, 'report']);
+    Route::get('/admin/order', [AdminController::class, 'getOrder']);
+    Route::get('/admin/product', [AdminController::class, 'getProduct']);
+    
 });
 
 //cache for image

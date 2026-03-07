@@ -225,6 +225,7 @@ class ShopController extends Controller
 
         $cart->location = $data['location'];
         $cart->status = $statusId;
+        $cart->ordered_at = now(); //อัพเดทวันที่ออเดอร์
         $cart->save();
 
         //เอา stock ที่ reserve ไว้มาตัดจริง
