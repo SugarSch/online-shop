@@ -16,7 +16,8 @@ class StatusSeeder extends Seeder
     {
         $product_rows = [
             ['code' => 'available', 'label' => 'เปิดขาย'],
-            ['code' => 'out_of_stock', 'label' => 'หมดสต็อก']
+            ['code' => 'out_of_stock', 'label' => 'หมดสต็อก'],
+            ['code' => 'less_than_10', 'label' => 'ใกล้หมดสต๊อก']
         ];
 
         foreach ($product_rows as $r) {

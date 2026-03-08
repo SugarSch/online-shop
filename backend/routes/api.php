@@ -33,13 +33,18 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-//ฝั่ง admin
+//ฝั่ง admin (ทุก Route ที่อยู่ในนี้จะถูกเช็กสิทธิ์ Admin อัตโนมัติ)
 Route::middleware(['auth:sanctum', EnsureUserIsAdmin::class])->group(function () {
     
-    // ทุก Route ที่อยู่ในนี้จะถูกเช็กสิทธิ์ Admin อัตโนมัติ
     Route::get('/admin/report', [AdminController::class, 'report']);
+
     Route::get('/admin/order', [AdminController::class, 'getOrder']);
+    Route::patch('/admin/order/{cart}/update', [AdminController::class, 'updateOrder']);
+
     Route::get('/admin/product', [AdminController::class, 'getProduct']);
+    Route::get('/admin/product/{product}/detail', [AdminController::class, 'getProductDetail']);
+    Route::post('/admin/product/add', [AdminController::class, 'addProduct']);
+    Route::patch('/admin/product/{product}/update', [AdminController::class, 'updateProduct']);
     
 });
 
