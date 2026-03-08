@@ -53,7 +53,7 @@ trait SearchFilter
 
         }else if($mode == 'badge'){
             return Cache::rememberForever("status_{$type}_badges", function () use ($modelName) {
-                return $modelName::select('id', 'label', 'badge')->get();
+                return $modelName::select('id', 'label', 'code', 'badge')->get();
             });
         }
     }

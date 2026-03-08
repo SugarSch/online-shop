@@ -39,12 +39,12 @@ Route::middleware(['auth:sanctum', EnsureUserIsAdmin::class])->group(function ()
     Route::get('/admin/report', [AdminController::class, 'report']);
 
     Route::get('/admin/order', [AdminController::class, 'getOrder']);
-    Route::patch('/admin/order/{cart}/update', [AdminController::class, 'updateOrder']);
+    Route::patch('/admin/order/{cart}', [AdminController::class, 'updateOrder']);
 
     Route::get('/admin/product', [AdminController::class, 'getProduct']);
-    Route::get('/admin/product/{product}/detail', [AdminController::class, 'getProductDetail']);
+    Route::get('/admin/product/{product}', [AdminController::class, 'getProductDetail']);
     Route::post('/admin/product/add', [AdminController::class, 'addProduct']);
-    Route::patch('/admin/product/{product}/update', [AdminController::class, 'updateProduct']);
+    Route::patch('/admin/product/{product}', [AdminController::class, 'updateProduct']);
     
 });
 

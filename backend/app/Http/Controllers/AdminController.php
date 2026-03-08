@@ -40,11 +40,11 @@ class AdminController extends Controller
         }
 
         //ให้ order ที่จ่ายเงินแล้วแต่ยังไม่ส่ง โชว์ก่อนเสมอ
-        $query->orderByRaw('CASE 
-                WHEN status = ? THEN 1 
-                WHEN status = ? THEN 2
-                ELSE 3
-            END', [$paid_statusId, $completed_statusId]);
+        // $query->orderByRaw('CASE 
+        //         WHEN status = ? THEN 1 
+        //         WHEN status = ? THEN 2
+        //         ELSE 3
+        //     END', [$paid_statusId, $completed_statusId]);
         $query->orderBy('ordered_at');
 
         $orders = $query->paginate(10);
@@ -57,7 +57,26 @@ class AdminController extends Controller
         
     }
 
-    public function updateOrder(Request $request){
+    public function updateOrder(Request $request, Cart $cart){
+        $request->validate([
+            'status' => 'required',
+        ]);
+
+        $statusId = $this->getStatusIdByCode('cart', $request->status);
+        if (!$statusId) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Invalid status'
+            ], 400);
+        }
+
+        $cart->status = $statusId;
+        $cart->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Update order status'
+        ]);
 
     }
 
