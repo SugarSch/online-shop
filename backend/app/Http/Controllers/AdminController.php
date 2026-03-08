@@ -21,6 +21,7 @@ class AdminController extends Controller
         // ดึงค่าจาก Query String
         $status_seleted = $request->query('status');
         $ordered_at_seleted = $request->query('ordered_at');
+        $sort_by_seleted = $request->query('sort_by') ?? 'date';
         
         $query = Cart::with('user', 'cartItems.product')->whereHas('cartItems'); // ดึงเฉพาะ order ที่มีสินค้าใน cart เท่านั้น
 
@@ -40,12 +41,17 @@ class AdminController extends Controller
         }
 
         //ให้ order ที่จ่ายเงินแล้วแต่ยังไม่ส่ง โชว์ก่อนเสมอ
-        // $query->orderByRaw('CASE 
-        //         WHEN status = ? THEN 1 
-        //         WHEN status = ? THEN 2
-        //         ELSE 3
-        //     END', [$paid_statusId, $completed_statusId]);
-        $query->orderBy('ordered_at');
+        if($sort_by_seleted == 'date'){
+            $query->orderBy('ordered_at');
+        }else{
+            $query->orderByRaw('CASE 
+                WHEN status = ? THEN 1 
+                WHEN status = ? THEN 2
+                ELSE 3
+            END', [$paid_statusId, $completed_statusId]);
+            $query->orderBy('ordered_at');
+        }
+        
 
         $orders = $query->paginate(10);
 

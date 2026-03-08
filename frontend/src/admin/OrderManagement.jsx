@@ -1,15 +1,28 @@
-import React from 'react';
-import { Container, Row, Col, Card, Accordion, Table, Badge, Button } from 'react-bootstrap';
+import React, {useState} from 'react';
+import { Container, Row, Col, Card, Accordion, Table, Badge, Button, Form, Pagination } from 'react-bootstrap';
 import { useAdmin } from '../hooks/useAdmin';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { thbFormatter, formatDateTime } from '../baseVariable';
 
 function OrderManagement(){
-    const { orders, isOrderLoading, updateOrder } = useAdmin();
-    
+
+    //filter 
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [filterDate, setFilterDate] = useState('current_week');
+    const [sortBy, setSortBy] = useState('date');
+    const [page, setPage] = useState(1);
+
+    const { orders, isOrderLoading, updateOrder } = useAdmin({
+        status: filterStatus,
+        date: filterDate,
+        sortBy: sortBy,
+        page: page
+    });
+    console.log(orders);
     //ดึงมาเอา option
     const { user } = useContext(AuthContext);
+    const date_options = user?.search_filter?.date_options || [];
     const cart_status_options = user?.search_filter?.cart_status_options || [];
     const cart_status_badges = user?.search_filter?.cart_status_badges || [];
 
@@ -23,6 +36,40 @@ function OrderManagement(){
             <Col className="card-title h2 text-center">รายการออเดอร์</Col>
         </Row>
         <Row className="px-2 py-2">
+            {
+                //ใส่ filter เพิ่มเติมได้ที่นี่
+            }
+            <Col md={4}>
+                <Form.Group>
+                    <Form.Label className="fw-bold">สถานะ</Form.Label>
+                    <Form.Select value={filterStatus} onChange={(e) => {setFilterStatus(e.target.value); setPage(1)}}>
+                        <option value="all">ทั้งหมด</option>
+                        {cart_status_options.map(opt => (
+                            <option key={opt.id} value={opt.id}>{opt.label}</option>
+                        ))}
+                    </Form.Select>
+                </Form.Group>
+            </Col>
+            <Col md={4}>
+                <Form.Group>
+                    <Form.Label className="fw-bold">ช่วงเวลา</Form.Label>
+                    <Form.Select value={filterDate} onChange={(e) => {setFilterDate(e.target.value); setPage(1)}}>
+                        <option value="all">ทั้งหมด</option>
+                        {Object.entries(date_options).map(([key, label]) => (
+                            <option key={key} value={key}>{label}</option>
+                        ))}
+                    </Form.Select>
+                </Form.Group>
+            </Col>
+            <Col md={4}>
+                <Form.Group>
+                    <Form.Label className="fw-bold">เรียงตาม</Form.Label>
+                    <Form.Select value={sortBy} onChange={(e) => {setSortBy(e.target.value); setPage(1)}}>
+                        <option value="date">วันที่ (ใหม่ไปเก่า)</option>
+                        <option value="status">ลำดับความสำคัญ (ชำระแล้วขึ้นก่อน)</option>
+                    </Form.Select>
+                </Form.Group>
+            </Col>
 
         </Row>
         {
@@ -31,7 +78,8 @@ function OrderManagement(){
             </Row> : orders?.data?.length == 0 ? <Row>
                 <Col className="text-center">ไม่มีออเดอร์</Col>
             </Row> :
-            orders?.data?.map( order => (
+            <>
+            {orders?.data?.map( order => (
                 <Row className="my-3 mx-2" key={order.id}>
                     <Card>
                         <Card.Body>
@@ -54,6 +102,7 @@ function OrderManagement(){
                                 }
                             </Card.Title>
                             <Card.Subtitle className="mb-2 text-muted">{formatDateTime(order.ordered_at)}</Card.Subtitle>
+                            <Card.Subtitle className="mb-2">ลูกค้า: {order.user.name}</Card.Subtitle>
                             <Card.Subtitle className="mb-2">ที่อยู่จัดส่ง: {order.location}</Card.Subtitle>
                             <Card.Subtitle className="mb-3">
                                 ยอดรวม: {thbFormatter.format(order?.cart_items.reduce((accumulator, currentValue) => {
@@ -92,7 +141,33 @@ function OrderManagement(){
                         </Card.Body>
                     </Card>
                 </Row>
-            ))
+            ))}
+            <Row>
+                <Col className="d-flex justify-content-center mt-4">
+                    {//ใส่ pagination 
+                    }
+                    <Pagination>
+                        <Pagination.Prev 
+                            disabled={orders.current_page === 1} 
+                            onClick={() => setPage(page - 1)} 
+                        />
+                        {[...Array(orders.last_page)].map((_, i) => (
+                            <Pagination.Item 
+                                key={i + 1} 
+                                active={i + 1 === orders.current_page}
+                                onClick={() => setPage(i + 1)}
+                            >
+                                {i + 1}
+                            </Pagination.Item>
+                        ))}
+                        <Pagination.Next 
+                            disabled={orders.current_page === orders.last_page} 
+                            onClick={() => setPage(page + 1)} 
+                        />
+                    </Pagination>
+                </Col>
+            </Row>
+            </>
         }
     </Container>
 }

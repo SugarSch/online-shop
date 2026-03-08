@@ -3,22 +3,23 @@ import api from '../api';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
-export const useAdmin = () => {
+export const useAdmin = (filters = {}) => {
     const { token } = useContext(AuthContext);
     const queryClient = useQueryClient();
 
     // ดึงข้อมูลออเดอร์ทั้งหมด
     const orderQuery = useQuery({
-        queryKey: ["adminOrders"],
-        queryFn: async (payload) => {
+        queryKey: ["adminOrders", filters],
+        queryFn: async () => {
             try {
-                let url = "/admin/order";
-
-                if(payload?.status) url += "?status=" + payload.status;
-
-                if(payload?.ordered_at) url += (payload.status ? "&" : "?") + "ordered_at=" + payload.ordered_at;
-
-                const response = await api.get(url);
+                const response = await api.get("/admin/order", {
+                    params: {
+                        status: filters.status,
+                        ordered_at: filters.date,
+                        sort_by: filters.sortBy,
+                        page: filters.page // ส่งเลขหน้าไปให้ Laravel
+                    }
+                });
                 return response.data.data ? response.data.data : { };
             } catch (error) {
                 alert("เกิดข้อผิดพลาดในการดึงข้อมูลออเดอร์");
