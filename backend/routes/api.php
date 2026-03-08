@@ -47,11 +47,3 @@ Route::middleware(['auth:sanctum', EnsureUserIsAdmin::class])->group(function ()
     Route::put('/admin/product/', [AdminController::class, 'manageProduct']);
     
 });
-
-//cache for image
-// Route::get('/storage/{path}', function ($path) {
-//   return response()->file(storage_path("app/public/{$path}"))
-//     ->withHeaders([
-//       'Cache-Control' => 'public, max-age=604800, immutable',
-//     ]);
-// })->where('path', '.*');

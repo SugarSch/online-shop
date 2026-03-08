@@ -96,7 +96,8 @@ class AdminController extends Controller
         $name_seleted = trim(strtolower($request->query('name')));
         $status_seleted = $request->query('status');
 
-        $query = Product::withSum( ['reservations' => function($query) {
+        $query = Product::select('id', 'name', 'img_path', 'price', 'stock_number','status')
+                    ->withSum( ['reservations' => function($query) {
                         $query->where('status', 'pending')
                             ->where('expired_at', '>', now());
                     }], 'quantity');
@@ -205,13 +206,15 @@ class AdminController extends Controller
 
         if($existingProduct){
             $existingProduct->update($data);
+            $product = $existingProduct;
         }else{
-            Product::create($data);
+            $product = Product::create($data);
         }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Product update/added successfully'
+            'message' => 'Product update/added successfully',
+            'data' => $product
         ]);
     }
 
