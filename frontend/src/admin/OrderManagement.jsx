@@ -65,8 +65,8 @@ function OrderManagement(){
                 <Form.Group>
                     <Form.Label className="fw-bold">เรียงตาม</Form.Label>
                     <Form.Select value={sortBy} onChange={(e) => {setSortBy(e.target.value); setPage(1)}}>
-                        <option value="date">วันที่ (ใหม่ไปเก่า)</option>
-                        <option value="status">ลำดับความสำคัญ (ชำระแล้วขึ้นก่อน)</option>
+                        <option value="date">วันที่</option>
+                        <option value="status">ลำดับความสำคัญ (รอจัดส่งขึ้นก่อน)</option>
                     </Form.Select>
                 </Form.Group>
             </Col>
