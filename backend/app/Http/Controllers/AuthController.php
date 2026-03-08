@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\User;
+use App\SearchFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    use SearchFilter;
     public function login(Request $request){
 
         $request->validate([
@@ -38,7 +40,14 @@ class AuthController extends Controller
                         'name' => $user->name,
                         'email' => $user->email,
                         'role' => $user->role->code,
-                        'default_location' => $user->default_location
+                        'default_location' => $user->default_location,
+                        'search_filter' => [
+                                'date_options' => $this->dateFilter('get_option'),
+                                'cart_status_options' => $this->StatusOption('get_option', 'cart'),
+                                'cart_status_badges' => $this->StatusOption('badge', 'cart'),
+                                'product_status_options' => $this->StatusOption('get_option', 'product'),
+                                'product_status_badges' => $this->StatusOption('badge', 'product'),
+                            ]
                     ]
         ]);
     }
@@ -77,10 +86,17 @@ class AuthController extends Controller
         $user = auth()->user();
         $data = $user;
         $data['role'] = $user->role->code;
+        $data['search_filter'] = [
+            'date_options' => $this->dateFilter('get_option'),
+            'cart_status_options' => $this->StatusOption('get_option', 'cart'),
+            'cart_status_badges' => $this->StatusOption('badge', 'cart'),
+            'product_status_options' => $this->StatusOption('get_option', 'product'),
+            'product_status_badges' => $this->StatusOption('badge', 'product'),
+        ];
 
         return response()->json([
             'status' => 'success',
-            'data' => auth()->user()
+            'data' => $data
         ]);
     }
 }

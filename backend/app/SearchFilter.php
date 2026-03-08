@@ -2,6 +2,8 @@
 
 namespace App;
 
+use Illuminate\Support\Facades\Cache;
+
 trait SearchFilter
 {
     public function dateFilter($mode = 'get_option', $filter = '' ) {
@@ -39,7 +41,20 @@ trait SearchFilter
         }
     }
 
-    public function StatusOption($mode = 'get_option', $table='cart'){
+    public function StatusOption($mode = 'get_option', $type='cart'){
+        $modelName = "App\\Models\\" . ucfirst($type) . "Status";
 
+        // $query = $modelName::query();
+
+        if( $mode == 'get_option' ){
+            return Cache::rememberForever("status_{$type}_options", function () use ($modelName) {
+                return $modelName::select('id', 'label')->where('code', '!=', 'pending')->get();
+            });
+
+        }else if($mode == 'badge'){
+            return Cache::rememberForever("status_{$type}_badges", function () use ($modelName) {
+                return $modelName::select('id', 'label', 'badge')->get();
+            });
+        }
     }
 }
