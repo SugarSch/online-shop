@@ -39,7 +39,7 @@ function Order(){
             orderCart(payload, {
                 onSuccess: () => {
                     alert("บันทึกคำสั่งซื้อเรียบร้อย ขอบคุณที่อุดหนุนค่ะ");
-                    navigate("/");
+                    navigate("/product");
                 },
                 onError: (err) => {
                     alert("เกิดข้อผิดพลาด: " + err.response?.data?.message);

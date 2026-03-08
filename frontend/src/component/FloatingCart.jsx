@@ -68,7 +68,6 @@ function CartModal({ isOpen, onClose, cart }){
 
     function toOrderPage(){
         const payload = { id: cart.cart.id };
-        console.log(payload);
         reserveStockCart(payload, {
             onSuccess: () => {
                 navigate("/order");
