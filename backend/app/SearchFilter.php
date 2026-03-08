@@ -20,7 +20,7 @@ trait SearchFilter
 
         if($mode == 'search'){
             //ของ today
-            $result = ['start_at'=> now(), 'end_at' => now()];
+            $result = ['start_at'=> now()->startOfDay(), 'end_at' => now()->endOfDay()];
             switch ($filter) {
                 case 'current_week':
                     $result['start_at'] = now()->startOfWeek();
