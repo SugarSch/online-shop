@@ -106,7 +106,7 @@ export const useCart = () => {
             queryClient.setQueryData(["cart"], () => {
                 return {}; //ล้างตะกร้าให้ว่าง
             });
-            queryClient.invalidateQueries({ queryKey: ["cart", "cartOrderHistory"], exact: false });
+            queryClient.invalidateQueries({ queryKey: ["cart", "cartOrderHistory", "authUser"], exact: false });
         }
     });
 
