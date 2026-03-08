@@ -102,7 +102,6 @@ function OrderManagement(){
                                 }
                             </Card.Title>
                             <Card.Subtitle className="mb-2 text-muted">{formatDateTime(order.ordered_at)}</Card.Subtitle>
-                            <Card.Subtitle className="mb-2">ลูกค้า: {order.user.name}</Card.Subtitle>
                             <Card.Subtitle className="mb-2">ที่อยู่จัดส่ง: {order.location}</Card.Subtitle>
                             <Card.Subtitle className="mb-3">
                                 ยอดรวม: {thbFormatter.format(order?.cart_items.reduce((accumulator, currentValue) => {
