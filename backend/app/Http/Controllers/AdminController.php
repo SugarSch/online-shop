@@ -22,7 +22,7 @@ class AdminController extends Controller
         $status_seleted = $request->query('status');
         $ordered_at_seleted = $request->query('ordered_at');
         
-        $query = Cart::query();
+        $query = Cart::with('user', 'cartItems.product')->whereHas('cartItems'); // ดึงเฉพาะ order ที่มีสินค้าใน cart เท่านั้น
 
         //ช่อง status ใส่ค่ามา
         if ($status_seleted && $status_seleted !== 'all') {
