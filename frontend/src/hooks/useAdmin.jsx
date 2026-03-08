@@ -90,16 +90,25 @@ export const useAdminProductDetail = (productId = null) => {
     const queryClient = useQueryClient();
 
     const productDetailQuery = useQuery({
-        queryKey: ["adminProductDetail", productId],
+        queryKey: ["adminProductDetail", productId || 'new'],
         queryFn: async () => {
             try {
+                if (!productId) {
+                    return {
+                        name: '',
+                        price: 0,
+                        description: '',
+                        stock_number: 0,
+                        chartData: { data: [] }
+                    };
+                }
                 const response = await api.get("/admin/product/" + productId);
                 return response.data.data ? response.data.data : { };
             } catch (error) {
                 alert("เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า");
             }
         },
-        enabled: !!token,
+        enabled: !!token && !!productId,
         staleTime: 1000 * 60 * 10, // 10 นาที
         retry: false,
         refetchOnWindowFocus: false,
@@ -109,14 +118,25 @@ export const useAdminProductDetail = (productId = null) => {
     const manageProductMutation = useMutation({
         mutationFn: async (payload) => {
             if (payload.id) { // ถ้ามี id แปลว่าเป็นการแก้ไขข้อมูลสินค้า
-                return await api.put("/admin/product/", payload);
+                return await api.post(`/admin/product/update/${payload.id}`, payload,
+                    {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }
+                );
             } else {
-                return await api.post("/admin/product/add", payload);
+                return await api.post("/admin/product/add", payload, 
+                    {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    }
+                );
             }
         },
-        onSuccess: () => {
-            // ล้างข้อมูลสินค้าเก่าเพื่อให้ React query ดึงตัวใหม่
-            queryClient.invalidateQueries({ queryKey: ["adminProducts", "adminProductDetail"] });
+        onSuccess: (res, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["adminProducts"] });
+            const updatedId = res.data.data.id; 
+            queryClient.invalidateQueries({ 
+                queryKey: ["adminProductDetail", String(updatedId)] 
+            });
         }
     });
 

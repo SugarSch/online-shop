@@ -74,8 +74,8 @@ function App() {
                                 } >
                   <Route path="order_management" element={ <OrderManagement /> } />
                   <Route path="product_management" element={ <ProductManagement /> } />
-                  <Route path="product/:id" element={ <ProductDetail /> } />
-                  <Route path="product_form/:id" element={ <ProductForm /> } />
+                  <Route path="product/:id?" element={ <ProductDetail /> } />
+                  <Route path="product_form/:id?" element={ <ProductForm /> } />
                   <Route path="report" element={ <Report /> } />
               </Route>
 

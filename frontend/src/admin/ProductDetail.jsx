@@ -7,7 +7,6 @@ import { thbFormatter } from '../baseVariable';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const MyChart = (data) => {
-    console.log(data);
     const actualData = data?.data || [];
   return (
     // ResponsiveContainer ช่วยให้กราฟปรับขนาดตาม Div ที่หุ้มมันอยู่

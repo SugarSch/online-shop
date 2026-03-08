@@ -44,6 +44,6 @@ Route::middleware(['auth:sanctum', EnsureUserIsAdmin::class])->group(function ()
     Route::get('/admin/product', [AdminController::class, 'getProduct']);
     Route::get('/admin/product/{product}', [AdminController::class, 'getProductDetail']);
     Route::post('/admin/product/add', [AdminController::class, 'manageProduct']);
-    Route::put('/admin/product/', [AdminController::class, 'manageProduct']);
+    Route::post('/admin/product/update/{product}', [AdminController::class, 'manageProduct']);
     
 });

@@ -10,7 +10,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 
 class AdminController extends Controller
@@ -176,30 +177,31 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'stock_number' => 'required|numeric|gt:0',
-            'img_path' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+            'img_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $product_id = $request->id;
-        $existingProduct = null;
-        if($product_id){
-            $existingProduct = Product::find($product_id);
-        }
+        $existingProduct = $product_id ? Product::find($product_id) : null;
 
         $file = $request->file('img_path');
         if($file){
             $fileName = time() . '_' . uniqid() . '.webp';
             $path = 'products/' . $fileName;
 
-            $image = Image::read($file)
+            $imgManager = new ImageManager(new Driver());
+            $image = $imgManager->read($file)
                 ->cover(300, 300) // ตัดภาพให้พอดี 300x300 (Crop & Resize)
                 ->toWebp(80);     // แปลงเป็น WebP คุณภาพ 80%
 
             // เก็บไฟล์ลงใน storage/app/public/products/
-            Storage::disk('public')->put($path, (string) $image);
+            Storage::disk('public')->put($path, $image->toString());
 
             //ถ้าเป็นการแก้ไขและมีรูปเดิมอยู่ ให้ลบรูปเดิมออกก่อน
-            if($existingProduct && $existingProduct->img_path){
-                Storage::disk('public')->delete('products/'.$existingProduct->img_path);
+            if ($existingProduct && isset($existingProduct->img_path)) {
+                 // ตรวจสอบว่า img_path ไม่ใช่รูป placeholder ก่อนลบ
+                 if ($existingProduct->img_path != env('APP_URL').'/storage/product_placeholeder.webp') {
+                    Storage::disk('public')->delete('products/' . $existingProduct->img_path);
+                }
             }
 
             $data['img_path'] = $fileName;
@@ -209,6 +211,10 @@ class AdminController extends Controller
             $existingProduct->update($data);
             $product = $existingProduct;
         }else{
+            $data['status'] = $this->getStatusIdByCode('product', 'available');
+            if (!isset($data['img_path'])) {
+                $data['img_path'] = null;
+            }
             $product = Product::create($data);
         }
 

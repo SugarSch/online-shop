@@ -11,7 +11,7 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'price', 'stock_number', 'status'];
+    protected $fillable = ['name', 'description', 'price', 'stock_number', 'status', 'img_path'];
 
     protected $appends = ['img_path']; // เพิ่มตัวนี้เพื่อให้ img_path แสดงใน JSON อัตโนมัติ
 
