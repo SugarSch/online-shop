@@ -127,6 +127,7 @@ class AdminController extends Controller
 
         //เอาค่าจำนวนที่ถูกจองไปแล้วมาแสดงด้วย (เฉพาะที่ยังไม่หมดอายุและยังไม่ถูกยกเลิก)
         $product->loadSum('reservations', 'quantity');
+        $pending_statusId = $this->getStatusIdByCode('cart', 'pending');
 
         //สำหรับกราฟยอดขายย้อนหลัง 12 เดือน
         $startDate = Carbon::now()->subMonths(11)->startOfMonth();
@@ -140,7 +141,7 @@ class AdminController extends Controller
                 DB::raw("SUM(cart_items.quantity) as total_sales")
             )
             ->where('cart_items.product_id', $product->id)
-            ->where('carts.status', 3) // ชำระเงินแล้ว
+            ->where('carts.status', '!=', $pending_statusId) // ชำระเงินแล้ว
             ->whereBetween('ordered_at', [$startDate, $endDate])
             ->groupBy(DB::raw("to_char(ordered_at, 'YYYY-MM')"))
             ->orderBy('month_key')
@@ -154,7 +155,7 @@ class AdminController extends Controller
             $key = $month->format('Y-m'); // '2025-03'
             
             $chartData[] = [
-                'name' => $month->translatedFormat('M y'), // เช่น "มี.ค. 25" หรือ "Mar 25"
+                'name' => $month->translatedFormat('M y'),
                 'sales' => isset($salesData[$key]) ? (int)$salesData[$key]->total_sales : 0,
             ];
         }

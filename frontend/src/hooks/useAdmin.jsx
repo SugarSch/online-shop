@@ -122,7 +122,7 @@ export const useAdminProductDetail = (productId = null) => {
 
     return {
         manageProduct: manageProductMutation.mutate,
-        productDetail: productDetailQuery.data,
+        product: productDetailQuery.data,
         isProductDetailLoading: productDetailQuery.isLoading,
         isProductDetailError: productDetailQuery.isError,
     }

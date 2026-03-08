@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Container, Row, Col, Card, Accordion, Table, Badge, Button, Form, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Card, Accordion, Table, Badge, Button, Form } from 'react-bootstrap';
 import { useAdminOrder } from '../hooks/useAdmin';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';

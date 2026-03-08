@@ -1,6 +1,6 @@
 import React, {useState, useContext} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Table, Badge, Button, Form, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Table, Badge, Button, Form } from 'react-bootstrap';
 import { useAdminProduct } from '../hooks/useAdmin';
 import { AuthContext } from '../context/AuthContext';
 import { thbFormatter } from '../baseVariable';
