@@ -17,7 +17,7 @@ function AdminNav(){
             <Navbar.Collapse id="admin-navbar" className="order-4 order-lg-2">
                 <Nav className="me-auto">
                     <Nav.Link href={"/admin/order_management"}>ออเดอร์</Nav.Link>
-                    <Nav.Link href={"/admin/report"}>รายงาน</Nav.Link>
+                    {/* <Nav.Link href={"/admin/report"}>รายงาน</Nav.Link> */}
                     <Nav.Link href={"/admin/product_management"}>จัดการสินค้า</Nav.Link>
                 </Nav>
             </Navbar.Collapse>

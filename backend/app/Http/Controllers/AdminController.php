@@ -7,6 +7,8 @@ use App\Models\Cart;
 use App\Models\Product;
 use App\SearchFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -87,11 +89,80 @@ class AdminController extends Controller
     }
 
     public function getProduct(Request $request){
+        // ดึงค่าจาก Query String
+        $name_seleted = trim(strtolower($request->query('name')));
+        $status_seleted = $request->query('status');
 
+        $query = Product::withSum( ['reservations' => function($query) {
+                        $query->where('status', 'pending')
+                            ->where('expired_at', '>', now());
+                    }], 'quantity');
+        
+        //ช่อง name ใส่ค่ามา
+        if ($name_seleted) {
+            $query->where('name', 'like', '%' . $name_seleted . '%');
+        }
+
+        //ช่อง status ใส่ค่ามา
+        if ($status_seleted && $status_seleted !== 'all') {
+            $query->where('status', $status_seleted);
+        }
+
+        $query->orderBy('name');
+
+        $products = $query->paginate(10);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Get product',
+            'data' => $products
+        ]);
     }
 
     public function getProductDetail(Product $product){
 
+        //เอาค่าจำนวนที่ถูกจองไปแล้วมาแสดงด้วย (เฉพาะที่ยังไม่หมดอายุและยังไม่ถูกยกเลิก)
+        $product->loadSum('reservations', 'quantity');
+
+        //สำหรับกราฟยอดขายย้อนหลัง 12 เดือน
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now()->endOfMonth();
+
+        $salesData = DB::table('carts')
+            ->join('cart_items', 'carts.id', '=', 'cart_items.cart_id')
+            ->select(
+                // ใช้ to_char เพื่อให้ได้ Format '2025-03' สำหรับจัดกลุ่มและเรียงลำดับ
+                DB::raw("to_char(ordered_at, 'YYYY-MM') as month_key"),
+                DB::raw("SUM(cart_items.quantity) as total_sales")
+            )
+            ->where('cart_items.product_id', $product->id)
+            ->where('carts.status', 3) // ชำระเงินแล้ว
+            ->whereBetween('ordered_at', [$startDate, $endDate])
+            ->groupBy(DB::raw("to_char(ordered_at, 'YYYY-MM')"))
+            ->orderBy('month_key')
+            ->get()
+            ->keyBy('month_key'); // เปลี่ยน Collection ให้เรียกใช้ผ่าน Key ได้ง่ายๆ
+
+        // สร้างโครงข้อมูล 12 เดือนให้ครบ (ป้องกันเดือนที่ยอดขายเป็น 0 หายไป)
+        $chartData = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $key = $month->format('Y-m'); // '2025-03'
+            
+            $chartData[] = [
+                'name' => $month->translatedFormat('M y'), // เช่น "มี.ค. 25" หรือ "Mar 25"
+                'sales' => isset($salesData[$key]) ? (int)$salesData[$key]->total_sales : 0,
+            ];
+        }
+
+        $data = $product;
+        $data->chartData = $chartData;
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Get product detail',
+            'data' => $data
+        ]);
     }
 
     public function addProduct(Request $request){
