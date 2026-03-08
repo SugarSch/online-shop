@@ -22,6 +22,7 @@ import ProductManagement from './admin/ProductManagement';
 import OrderManagement from './admin/OrderManagement';
 import Report from './admin/Report';
 import ProductDetail from './admin/ProductDetail';
+import ProductForm from './admin/ProductForm';
 
 //เช็กสิทธิ ถ้ายังไม่ login จะพากลับ login page
 const ProtectedRoute = ({ children, isAdminOnly = false }) => {
@@ -74,6 +75,7 @@ function App() {
                   <Route path="order_management" element={ <OrderManagement /> } />
                   <Route path="product_management" element={ <ProductManagement /> } />
                   <Route path="product/:id" element={ <ProductDetail /> } />
+                  <Route path="product_form/:id" element={ <ProductForm /> } />
                   <Route path="report" element={ <Report /> } />
               </Route>
 

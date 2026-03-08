@@ -4,6 +4,11 @@ body {
     font-family: "Mitr", sans-serif;
 }
 
+:root {
+    --bs-border-color: #6e6e6e !important;
+    --bs-btn-border-color: #6e6e6e !important;
+}
+
 .btn-primary {
     --bs-btn-color: #fff;
     --bs-btn-bg: #f37a01;

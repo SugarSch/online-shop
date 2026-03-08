@@ -3,7 +3,8 @@ import api from '../api';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
-export const useAdmin = (filters = {}) => {
+
+export const useAdminOrder = (filters = {}) => {
     const { token } = useContext(AuthContext);
     const queryClient = useQueryClient();
 
@@ -42,6 +43,16 @@ export const useAdmin = (filters = {}) => {
         }
     });
 
+    return {
+        orders: orderQuery.data,
+        isOrderLoading: orderQuery.isLoading,
+        isOrderError: orderQuery.isError,
+        updateOrder: updateOrderMutation.mutate,
+    }
+};
+
+export const useAdminProduct = (filters = {}) => {
+    const { token } = useContext(AuthContext);
 
     // ดึงข้อมูล product ทั้งหมด
     const productQuery = useQuery({
@@ -66,11 +77,23 @@ export const useAdmin = (filters = {}) => {
         refetchOnWindowFocus: false,
     });
 
+    return {
+        products: productQuery.data,
+        isProductLoading: productQuery.isLoading,
+        isProductError: productQuery.isError
+    }
+}
+
+export const useAdminProductDetail = (productId = null) => {
+
+    const { token } = useContext(AuthContext);
+    const queryClient = useQueryClient();
+
     const productDetailQuery = useQuery({
-        queryKey: ["adminProductDetail"],
-        queryFn: async (payload) => {
+        queryKey: ["adminProductDetail", productId],
+        queryFn: async () => {
             try {
-                const response = await api.get("/admin/product/" + payload.id);
+                const response = await api.get("/admin/product/" + productId);
                 return response.data.data ? response.data.data : { };
             } catch (error) {
                 alert("เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า");
@@ -82,10 +105,10 @@ export const useAdmin = (filters = {}) => {
         refetchOnWindowFocus: false,
     });
 
-    //เพิ่มส้นค้าใหม่
+    //จัดการข้อมูลสินค้า
     const manageProductMutation = useMutation({
         mutationFn: async (payload) => {
-            if (payload.id) {
+            if (payload.id) { // ถ้ามี id แปลว่าเป็นการแก้ไขข้อมูลสินค้า
                 return await api.put("/admin/product/", payload);
             } else {
                 return await api.post("/admin/product/add", payload);
@@ -93,18 +116,11 @@ export const useAdmin = (filters = {}) => {
         },
         onSuccess: () => {
             // ล้างข้อมูลสินค้าเก่าเพื่อให้ React query ดึงตัวใหม่
-            queryClient.invalidateQueries({ queryKey: ["adminProducts"] });
+            queryClient.invalidateQueries({ queryKey: ["adminProducts", "adminProductDetail"] });
         }
     });
 
     return {
-        orders: orderQuery.data,
-        isOrderLoading: orderQuery.isLoading,
-        isOrderError: orderQuery.isError,
-        updateOrder: updateOrderMutation.mutate,
-        products: productQuery.data,
-        isProductLoading: productQuery.isLoading,
-        isProductError: productQuery.isError,
         manageProduct: manageProductMutation.mutate,
         productDetail: productDetailQuery.data,
         isProductDetailLoading: productDetailQuery.isLoading,

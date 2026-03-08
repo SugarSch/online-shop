@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import { Container, Row, Col, Card, Accordion, Table, Badge, Button, Form, Pagination } from 'react-bootstrap';
-import { useAdmin } from '../hooks/useAdmin';
+import { useAdminOrder } from '../hooks/useAdmin';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { thbFormatter, formatDateTime } from '../baseVariable';
+import PaginationSection from '../component/PaginationSection';
 
 function OrderManagement(){
 
@@ -13,13 +14,13 @@ function OrderManagement(){
     const [sortBy, setSortBy] = useState('date');
     const [page, setPage] = useState(1);
 
-    const { orders, isOrderLoading, updateOrder } = useAdmin({
+    const { orders, isOrderLoading, updateOrder } = useAdminOrder({
         status: filterStatus,
         date: filterDate,
         sortBy: sortBy,
         page: page
     });
-    console.log(orders);
+    
     //ดึงมาเอา option
     const { user } = useContext(AuthContext);
     const date_options = user?.search_filter?.date_options || [];
@@ -145,25 +146,11 @@ function OrderManagement(){
                 <Col className="d-flex justify-content-center mt-4">
                     {//ใส่ pagination 
                     }
-                    <Pagination>
-                        <Pagination.Prev 
-                            disabled={orders.current_page === 1} 
-                            onClick={() => setPage(page - 1)} 
-                        />
-                        {[...Array(orders.last_page)].map((_, i) => (
-                            <Pagination.Item 
-                                key={i + 1} 
-                                active={i + 1 === orders.current_page}
-                                onClick={() => setPage(i + 1)}
-                            >
-                                {i + 1}
-                            </Pagination.Item>
-                        ))}
-                        <Pagination.Next 
-                            disabled={orders.current_page === orders.last_page} 
-                            onClick={() => setPage(page + 1)} 
-                        />
-                    </Pagination>
+                    <PaginationSection 
+                        currentPage={orders.current_page} 
+                        totalPages={orders.last_page} 
+                        onPageChange={setPage} 
+                    />
                 </Col>
             </Row>
             </>
