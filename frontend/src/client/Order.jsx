@@ -67,7 +67,7 @@ function Order(){
                 <Col>
                     <Button
                         variant="primary"
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate("/product")}
                     >กลับสู่หน้าหลัก</Button>
                 </Col>
             </Row>
