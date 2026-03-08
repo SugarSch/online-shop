@@ -6,9 +6,12 @@ use App\HasStatus;
 use App\Models\Cart;
 use App\Models\Product;
 use App\SearchFilter;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Image;
+
 
 class AdminController extends Controller
 {
@@ -165,12 +168,51 @@ class AdminController extends Controller
         ]);
     }
 
-    public function addProduct(Request $request){
+    public function manageProduct(Request $request){
+        $data = $request->validate([
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'stock_number' => 'required|numeric|gt:0',
+            'img_path' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
 
-    }
+        $product_id = $request->id;
+        $existingProduct = null;
+        if($product_id){
+            $existingProduct = Product::find($product_id);
+        }
 
-    public function updateProduct(Request $request){
+        $file = $request->file('img_path');
+        if($file){
+            $fileName = time() . '_' . uniqid() . '.webp';
+            $path = 'products/' . $fileName;
 
+            $image = Image::read($file)
+                ->cover(300, 300) // ตัดภาพให้พอดี 300x300 (Crop & Resize)
+                ->toWebp(80);     // แปลงเป็น WebP คุณภาพ 80%
+
+            // เก็บไฟล์ลงใน storage/app/public/products/
+            Storage::disk('public')->put($path, (string) $image);
+
+            //ถ้าเป็นการแก้ไขและมีรูปเดิมอยู่ ให้ลบรูปเดิมออกก่อน
+            if($existingProduct && $existingProduct->img_path){
+                Storage::disk('public')->delete('products/'.$existingProduct->img_path);
+            }
+
+            $data['img_path'] = $fileName;
+        }
+
+        if($existingProduct){
+            $existingProduct->update($data);
+        }else{
+            Product::create($data);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product update/added successfully'
+        ]);
     }
 
     public function report(Request $request){
