@@ -1,0 +1,10 @@
+backend
+
+php artisan serve
+
+//สำหรับคืนสินค้าที่ถูกจองไว้แล้วไม่ชำระเงินในเวลาที่กำหนด
+php artisan reservation:release
+
+frontend
+
+npm run dev

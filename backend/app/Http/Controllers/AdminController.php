@@ -127,7 +127,12 @@ class AdminController extends Controller
     public function getProductDetail(Product $product){
 
         //เอาค่าจำนวนที่ถูกจองไปแล้วมาแสดงด้วย (เฉพาะที่ยังไม่หมดอายุและยังไม่ถูกยกเลิก)
-        $product->loadSum('reservations', 'quantity');
+        $product->loadSum([
+            'reservations' => function ($query) {
+                $query->where('status', 'pending')
+                    ->where('expired_at', '>', now());
+            }
+        ], 'quantity');
         $pending_statusId = $this->getStatusIdByCode('cart', 'pending');
 
         //สำหรับกราฟยอดขายย้อนหลัง 12 เดือน
@@ -176,12 +181,31 @@ class AdminController extends Controller
             'name' => 'required|string',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
-            'stock_number' => 'required|numeric|gt:0',
+            'stock_number' => 'required|numeric|integer|min:0',
             'img_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $product_id = $request->id;
         $existingProduct = $product_id ? Product::find($product_id) : null;
+
+        if($existingProduct){
+            //ถ้าเป็นการแก้ไข ให้เช็กคว่า stock ต้องไม่น้อยกว่าสินค้าที่โดนจ้องไว้อยู่แล้ว
+            $existingProduct->loadSum([
+                'reservations' => function ($query) {
+                    $query->where('status', 'pending')
+                        ->where('expired_at', '>', now());
+                }
+            ], 'quantity');
+
+            if($existingProduct->reservations_sum_quantity > $data['stock_number']){
+
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'Stock number cannot be less than reserved quantity (' . $existingProduct->reservations_sum_quantity . ')'
+                ], 400);
+                
+            }
+        }
 
         $file = $request->file('img_path');
         if($file){

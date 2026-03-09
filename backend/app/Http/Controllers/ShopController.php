@@ -113,7 +113,7 @@ class ShopController extends Controller
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Cannot order more than stock number'
-            ]);
+            ], 400);
         }
 
         if($cartId){
@@ -157,7 +157,7 @@ class ShopController extends Controller
             return response()->json([
                 'status' => 'fail',
                 'message' => 'Cannot order more than stock number'
-            ]);
+            ], 400);
         }
 
         $cartItem->quantity = $data['quantity'];
@@ -193,11 +193,23 @@ class ShopController extends Controller
         //ตรวจสอบสิทธิก่อน
         Gate::authorize('update', $cart);
 
-        //หมดอายุหลังผ่านไป 30 นาที
-        $expired_at = now()->addMinutes(30);
+        //เช็กก่อนว่าเคยจองไว้แล้วยังไม่หมดอายุอยู่ไหม
+        $existingReservation = $cart->reservations()
+                                    ->where('status', 'pending')
+                                    ->where('expired_at', '>', now())
+                                    ->orderBy('expired_at', 'asc')
+                                    ->get();
+
+        if($existingReservation->isNotEmpty()){
+            //ยังมีการจองที่ไม่หมดอายุอยู่ >>> ใช้เวลาหมดอายุเดิม
+            $expired_at = $existingReservation->first()->expired_at;
+        }else{
+            //หมดอายุหลังผ่านไป 30 นาที
+            $expired_at = now()->addMinutes(30);
+        }
 
         foreach($cart->cartItems as $cartItem){
-            DB::transaction(function () use ($cartItem, $expired_at) {
+            DB::transaction(function () use ($cartItem, $expired_at, $existingReservation) {
                 $data = [
                     'cart_id' => $cartItem->cart_id,
                     'product_id' => $cartItem->product_id,
@@ -205,11 +217,23 @@ class ShopController extends Controller
                     'expired_at' => $expired_at,
                     'quantity' => $cartItem->quantity
                 ];
-                ProductReservation::create($data);
+                if($existingReservation->isNotEmpty()){
+                    //เคยมีการจองที่ไม่หมดอายุอยู่แล้ว >>> อัพเดทการจองเดิม
+                    $reservation = $existingReservation->where('product_id', $cartItem->product_id)->first();
+                    if($reservation){
+                        $reservation->update($data);
+                    }
+                }else{
+                    //ไม่มีการจองที่ไม่หมดอายุอยู่เลย >>> สร้างการจองใหม่
+                    ProductReservation::create($data);
+                }
             });
         }
 
-        return response()->json(['status'=> 'success','data'=> ['expired_at' => $expired_at]]);
+        return response()->json([
+            'status'=> 'success',
+            'data'=> ['expired_at' => $expired_at]
+        ]);
 
     }
 
@@ -236,6 +260,17 @@ class ShopController extends Controller
                 $product = Product::find($reservation->product_id);
                 if ($product) {
                     $product->decrement('stock_number', $reservation->quantity);
+
+                    //ถ้าสต็อกเหลือน้อยกว่า 0 ให้เปลี่ยนสถานะสินค้าเป็น unavailable
+                    if ($product->stock_number <= 0) {
+                        $out_of_stock_statusId = $this->getStatusIdByCode('product', 'out_of_stock');
+                        $product->status = $out_of_stock_statusId;
+                        $product->save();
+                    }else if ($product->stock_number < 10 &&$product->stock_number > 0){
+                        $less_than_10_statusId = $this->getStatusIdByCode('product', 'less_than_10');
+                        $product->status = $less_than_10_statusId;
+                        $product->save();
+                    }
                 }
                 // อัปเดตสถานะการจองเป็น completed
                 $reservation->update(['status' => 'completed']);
@@ -294,11 +329,11 @@ class ShopController extends Controller
                         });
 
                         return [
-                            'date'     => $cart->updated_at,
-                            'location' => $cart->location,
-                            // 'status' => $cart->status->label, // เปิดใช้ได้ถ้า Load relationship status มาด้วย
-                            'items'    => $items,
-                            'total'    => $items->sum('total')
+                            'date'      => $cart->updated_at,
+                            'location'  => $cart->location,
+                            'status'    => $cart->status, // เปิดใช้ได้ถ้า Load relationship status มาด้วย
+                            'items'     => $items,
+                            'total'     => $items->sum('total')
                         ];
                     })->toArray();
         });
