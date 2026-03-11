@@ -52,29 +52,30 @@ function ProductDetail(){
                     <Button variant='info' onClick={() => navigate("/admin/product_form/" + id)}>แก้ไขข้อมูลสินค้า</Button>
                 </Col>
             </Row>
-            {
-                product.img_path && <Row className="mb-2">
-                    <Col className="text-center">
-                        <img src={product.img_path} alt={product.name} style={{maxWidth: "300px"}} />
-                    </Col>
-                </Row>
-            }
             <Row className="mb-2">
-                <Col>ราคา: {thbFormatter.format(product.price)}</Col>
-            </Row>
-            <Row className="mb-2">
-                <Col>จำนวนคงเหลือ: {product.stock_number}</Col>
-            </Row>
-            <Row className="mb-2">
-                <Col className="d-flex gap-2">
-                    สถานะ: 
-                    <Badge bg={product_status_badges.find(opt => opt.id == product.status)?.badge}>
-                        {product_status_badges.find(opt => opt.id == product.status)?.label}
-                    </Badge>
+                <Col lg={4}>
+                    {
+                        product.img_path && 
+                        <div className="d-flex justify-content-center">
+                            <img src={product.img_path} alt={product.name} style={{maxWidth: "300px"}} />
+                        </div>
+                    }
                 </Col>
-            </Row>
-            <Row className="mb-2">
-                <Col>รายละเอียด: {product.description}</Col>
+                <Col lg={8}>
+                    <Card>
+                        <Card.Body>
+                            <div className="mb-2">ราคา: {thbFormatter.format(product.price)}</div>
+                            <div className="mb-2">จำนวนคงเหลือ: {product.stock_number}</div>
+                            <div className="d-flex gap-2 mb-2">
+                                สถานะ: 
+                                <Badge bg={product_status_badges.find(opt => opt.id == product.status)?.badge}>
+                                    {product_status_badges.find(opt => opt.id == product.status)?.label}
+                                </Badge>
+                            </div>
+                            <div className="mb-2">รายละเอียด: {product.description}</div>
+                        </Card.Body>
+                    </Card>
+                </Col>
             </Row>
             <Row className="my-3">
                 <Col className="h4 text-center">ยอดขายย้อนหลัง 12 เดือน</Col>
