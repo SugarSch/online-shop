@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Modal, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Modal, Button, Form } from 'react-bootstrap';
 import { createPortal } from 'react-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCirclePlus } from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +9,7 @@ import FloatingCart from '../component/FloatingCart';
 import { useProduct } from '../hooks/useProduct';
 import { useCart } from '../hooks/useCart';
 import NumericInput from '../component/NumericInput';
+import PaginationSection from '../component/PaginationSection';
 
 function AddProductModal({ isOpen, onClose, currentProduct }){
     if (!currentProduct) return null;
@@ -73,11 +74,18 @@ const ProductSkeleton = () => (
 
 function Product(){
 
-    const { product, isLoading } = useProduct();
+    //filter 
+    const [filterName, setFilterName] = useState('');
+    const [page, setPage] = useState(1);
+
+    const { product, isLoading } = useProduct({
+        name: filterName,
+        page: page
+    });
     const [ modal, setModal ] = useState(false);
     const [ currentProduct, setCurrentProduct ] = useState(null);
 
-    const isReady = !isLoading && product && product.data.length > 0;
+    const isReady = !isLoading && product ;
 
     //สำหรับเช็กว่าภาพสินค้าโหลดสำเร็จรึยัง >>> โหลดเสร็จค่อยโชว์
     const [loadedImagesCount, setLoadedImagesCount] = useState(0);
@@ -108,6 +116,22 @@ function Product(){
     return <><Container>
         <Row className="px-2 py-2">
             <Col className="card-title h2 text-center">รายการสินค้า</Col>
+        </Row>
+        <Row className="px-2 py-2">
+            {
+                //ใส่ filter เพิ่มเติมได้ที่นี่
+            }
+            <Col>
+                <Form.Group>
+                    <Form.Label className="fw-bold">ชื่อ</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="กรอกชื่อสินค้า"
+                        value={filterName}
+                        onChange={(e) => {setFilterName(e.target.value); setPage(1)}}
+                    />
+                </Form.Group>
+            </Col>
         </Row>
         <Row>
             {
@@ -147,6 +171,18 @@ function Product(){
             }
             </div>
         </Row>
+        {product && (
+            <Row>
+                <Col className="d-flex justify-content-center mt-4">
+                    <PaginationSection 
+                        currentPage={product.current_page} 
+                        totalPages={product.last_page} 
+                        onPageChange={setPage} 
+                    />
+                </Col>
+            </Row>
+            )
+        }
     </Container>
     <FloatingCart />
     <AddProductModal isOpen={modal} onClose={closedModal} currentProduct={currentProduct} />

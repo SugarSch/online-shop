@@ -18,19 +18,27 @@ use Illuminate\Support\Facades\Gate;
 class ShopController extends Controller
 {
     use HasStatus;
-    public function products(){
+    public function products(Request $request){
+
+        $name_seleted = trim(strtolower($request->query('name')));
 
         //เอาเฉพาะ available
         $statusId = $this->getStatusIdByCode('product', 'available');
         
-        $products = Product::where('status', $statusId)
-                    ->select('id', 'name', 'img_path', 'price', 'stock_number','status')
+        $query = Product::select('id', 'name', 'img_path', 'price', 'stock_number','status')
                     ->withSum(['reservations' => function($query) {
                         $query->where('status', 'pending')
                             ->where('expired_at', '>', now());
-                    }], 'quantity')
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(12);
+                    }], 'quantity');
+
+        if ($name_seleted) {
+            $query->where('name', 'like', '%' . $name_seleted . '%');
+        }
+
+        $query->where('status', $statusId);
+
+        $products = $query->orderBy('created_at', 'desc')
+                ->paginate(12);
 
         return response()->json([
             'status' => 'success',
