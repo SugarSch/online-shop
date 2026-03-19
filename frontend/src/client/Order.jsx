@@ -83,7 +83,7 @@ function Order(){
             {
                 timeLeft 
                     ? `${timeLeft.minutes.toString().padStart(2, '0')}:${timeLeft.seconds.toString().padStart(2, '0')}` 
-                    : "00:00"
+                    : ""
             }
             </Col>
         </Row>
